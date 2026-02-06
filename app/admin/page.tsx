@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Check, X, Trash2, Mail, RefreshCw } from 'lucide-react'
+import { Loader2, Check, X, Trash2, RefreshCw, Plus, Calendar as CalendarIcon, Upload } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
     Table,
     TableBody,
@@ -16,6 +19,15 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog'
+import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('requests')
@@ -23,6 +35,21 @@ export default function AdminDashboard() {
     const [pendingMembers, setPendingMembers] = useState<any[]>([])
     const [allMembers, setAllMembers] = useState<any[]>([])
     const [messages, setMessages] = useState<any[]>([])
+    const [events, setEvents] = useState<any[]>([])
+
+    // Event Form State
+    const [newEventOpen, setNewEventOpen] = useState(false)
+    const [uploading, setUploading] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [newEvent, setNewEvent] = useState({
+        title: '',
+        date: '',
+        location: '',
+        excerpt: '',
+        content: '',
+        image_url: ''
+    })
+
     const router = useRouter()
 
     const fetchData = async () => {
@@ -47,9 +74,16 @@ export default function AdminDashboard() {
                 .select('*')
                 .order('created_at', { ascending: false })
 
+            // Fetch Events
+            const { data: evts } = await supabase
+                .from('events')
+                .select('*')
+                .order('date', { ascending: false }) // Newest events first
+
             setPendingMembers(pending || [])
             setAllMembers(all || [])
             setMessages(msgs || [])
+            setEvents(evts || [])
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -88,6 +122,93 @@ export default function AdminDashboard() {
         }
     }
 
+    // --- Event Handlers & Cropping ---
+
+    // State for Cropper
+    const [cropperOpen, setCropperOpen] = useState(false)
+    const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null)
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return
+        const file = e.target.files[0]
+
+        // Create a URL for the selected file to display in cropper
+        const reader = new FileReader()
+        reader.addEventListener('load', () => {
+            setSelectedImageSrc(reader.result?.toString() || null)
+            setCropperOpen(true)
+            // Reset input so creating same file triggers change again if needed
+            if (fileInputRef.current) fileInputRef.current.value = ''
+        })
+        reader.readAsDataURL(file)
+    }
+
+    const handleCropComplete = async (croppedBlob: Blob) => {
+        setUploading(true)
+        try {
+            const fileName = `${Math.random()}.jpg`
+            const filePath = `${fileName}`
+
+            // Convert Blob to File
+            const file = new File([croppedBlob], fileName, { type: 'image/jpeg' })
+
+            const { error: uploadError } = await supabase.storage
+                .from('event-images')
+                .upload(filePath, file)
+
+            if (uploadError) {
+                if (uploadError.message.includes("Bucket not found")) {
+                    throw new Error("Bucket 'event-images' not found. Please create it in Supabase Storage.")
+                }
+                throw uploadError
+            }
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('event-images')
+                .getPublicUrl(filePath)
+
+            setNewEvent({ ...newEvent, image_url: publicUrl })
+            alert('Image uploaded successfully!')
+        } catch (error: any) {
+            console.error('Error uploading image:', error)
+            alert(`Upload failed: ${error.message}`)
+        } finally {
+            setUploading(false)
+            setCropperOpen(false)
+        }
+    }
+
+    const handleCreateEvent = async (e: React.FormEvent) => {
+        e.preventDefault()
+        try {
+            const { error } = await supabase
+                .from('events')
+                .insert([newEvent])
+
+            if (error) throw error
+
+            alert('Event created successfully!')
+            setNewEventOpen(false)
+            setNewEvent({ title: '', date: '', location: '', excerpt: '', content: '', image_url: '' })
+            fetchData()
+        } catch (error: any) {
+            console.error('Error creating event:', error)
+            alert(`Failed to create event: ${error.message}`)
+        }
+    }
+
+    const handleDeleteEvent = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this event?')) return
+        try {
+            await supabase.from('events').delete().eq('id', id)
+            fetchData()
+        } catch (error) {
+            console.error('Error deleting event:', error)
+        }
+    }
+
+
     const handleLogout = async () => {
         await supabase.auth.signOut()
         router.push('/admin/login')
@@ -99,10 +220,18 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-muted/20 p-8">
+            <ImageCropperDialog
+                open={cropperOpen}
+                onOpenChange={setCropperOpen}
+                imageSrc={selectedImageSrc}
+                onCropComplete={handleCropComplete}
+                aspect={16 / 9}
+            />
+
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-                    <p className="text-muted-foreground">Manage members and view messages</p>
+                    <p className="text-muted-foreground">Manage members, events, and view messages</p>
                 </div>
                 <div className="flex gap-4">
                     <Button variant="outline" onClick={fetchData}><RefreshCw className="mr-2 h-4 w-4" /> Refresh</Button>
@@ -121,8 +250,106 @@ export default function AdminDashboard() {
                         )}
                     </TabsTrigger>
                     <TabsTrigger value="members">All Members</TabsTrigger>
+                    <TabsTrigger value="events">Events</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
                 </TabsList>
+
+                {/* --- Events Tab --- */}
+                <TabsContent value="events">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Events Management</CardTitle>
+                                <CardDescription>Create and manage community events.</CardDescription>
+                            </div>
+                            <Dialog open={newEventOpen} onOpenChange={setNewEventOpen}>
+                                <DialogTrigger asChild>
+                                    <Button><Plus className="mr-2 h-4 w-4" /> Create Event</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                    <DialogHeader>
+                                        <DialogTitle>Create New Event</DialogTitle>
+                                        <DialogDescription>Fill in the details for the new event.</DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleCreateEvent} className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="title">Event Title *</Label>
+                                            <Input id="title" required value={newEvent.title} onChange={e => setNewEvent({ ...newEvent, title: e.target.value })} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="date">Date & Time *</Label>
+                                                <Input id="date" type="datetime-local" required value={newEvent.date} onChange={e => setNewEvent({ ...newEvent, date: e.target.value })} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="location">Location *</Label>
+                                                <Input id="location" required value={newEvent.location} onChange={e => setNewEvent({ ...newEvent, location: e.target.value })} />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="image">Event Image</Label>
+                                            <div className="flex items-center gap-4">
+                                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                                                    {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                                    {uploading ? 'Processing...' : 'Select & Crop Image'}
+                                                </Button>
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={handleFileSelect}
+                                                />
+                                                {newEvent.image_url && <span className="text-sm text-green-600">Image uploaded!</span>}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="excerpt">Short Description (Excerpt) *</Label>
+                                            <Textarea id="excerpt" required placeholder="Brief summary for the event card..." value={newEvent.excerpt} onChange={e => setNewEvent({ ...newEvent, excerpt: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="content">Full Details *</Label>
+                                            <Textarea id="content" required placeholder="Full event details..." className="h-32" value={newEvent.content} onChange={e => setNewEvent({ ...newEvent, content: e.target.value })} />
+                                        </div>
+                                        <Button type="submit" className="w-full" disabled={uploading}>Create Event</Button>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </CardHeader>
+                        <CardContent>
+                            {events.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">No events created yet.</div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Title</TableHead>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Location</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {events.map((event) => (
+                                            <TableRow key={event.id}>
+                                                <TableCell className="font-medium">{event.title}</TableCell>
+                                                <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
+                                                <TableCell>{event.location}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteEvent(event.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
                 <TabsContent value="requests">
                     <Card>

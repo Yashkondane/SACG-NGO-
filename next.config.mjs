@@ -9,6 +9,13 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
     qualities: [75, 80],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'rykacjrlxjejvhtjwelj.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   experimental: {
     turbo: {
