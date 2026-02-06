@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect, useState, useMemo } from 'react'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -5,112 +8,106 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, Phone, Search } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Mail, Search, Briefcase, MapPin } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { MembershipForm } from '@/components/membership-form'
+import { groupBy } from 'lodash'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
-const members = [
-  {
-    name: 'Amit Banerjee',
-    role: 'Community Member',
-    location: 'New Haven, CT',
-    email: 'amit.b@example.com',
-    phone: '(203) 555-0101',
-    initials: 'AB',
-  },
-  {
-    name: 'Deepa Chatterjee',
-    role: 'Event Volunteer',
-    location: 'West Haven, CT',
-    email: 'deepa.c@example.com',
-    phone: '(203) 555-0102',
-    initials: 'DC',
-  },
-  {
-    name: 'Kiran Desai',
-    role: 'Youth Program Coordinator',
-    location: 'East Haven, CT',
-    email: 'kiran.d@example.com',
-    phone: '(203) 555-0103',
-    initials: 'KD',
-  },
-  {
-    name: 'Neha Gupta',
-    role: 'Community Member',
-    location: 'Hamden, CT',
-    email: 'neha.g@example.com',
-    phone: '(203) 555-0104',
-    initials: 'NG',
-  },
-  {
-    name: 'Rahul Iyer',
-    role: 'Cultural Committee',
-    location: 'New Haven, CT',
-    email: 'rahul.i@example.com',
-    phone: '(203) 555-0105',
-    initials: 'RI',
-  },
-  {
-    name: 'Sanjana Kapoor',
-    role: 'Community Member',
-    location: 'Branford, CT',
-    email: 'sanjana.k@example.com',
-    phone: '(203) 555-0106',
-    initials: 'SK',
-  },
-  {
-    name: 'Tarun Malhotra',
-    role: 'Event Volunteer',
-    location: 'Milford, CT',
-    email: 'tarun.m@example.com',
-    phone: '(203) 555-0107',
-    initials: 'TM',
-  },
-  {
-    name: 'Uma Nair',
-    role: 'Outreach Coordinator',
-    location: 'New Haven, CT',
-    email: 'uma.n@example.com',
-    phone: '(203) 555-0108',
-    initials: 'UN',
-  },
-  {
-    name: 'Vivek Patel',
-    role: 'Community Member',
-    location: 'Orange, CT',
-    email: 'vivek.p@example.com',
-    phone: '(203) 555-0109',
-    initials: 'VP',
-  },
-  {
-    name: 'Zara Rahman',
-    role: 'Youth Mentor',
-    location: 'New Haven, CT',
-    email: 'zara.r@example.com',
-    phone: '(203) 555-0110',
-    initials: 'ZR',
-  },
-  {
-    name: 'Arjun Sharma',
-    role: 'Community Member',
-    location: 'West Haven, CT',
-    email: 'arjun.s@example.com',
-    phone: '(203) 555-0111',
-    initials: 'AS',
-  },
-  {
-    name: 'Priya Verma',
-    role: 'Education Committee',
-    location: 'New Haven, CT',
-    email: 'priya.v@example.com',
-    phone: '(203) 555-0112',
-    initials: 'PV',
-  },
-]
+type Member = {
+  id: string
+  full_name: string
+  profession: string
+  location: string
+  email: string
+  status: string
+  created_at: string
+}
 
 export default function MembersPage() {
+  const [members, setMembers] = useState<Member[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedProfession, setSelectedProfession] = useState('all')
+
+  // State for Contact Member Dialog
+  const [contactDialogOpen, setContactDialogOpen] = useState(false)
+  const [selectedMemberName, setSelectedMemberName] = useState('')
+
+  // Fetch approved members
+  useEffect(() => {
+    async function fetchMembers() {
+      try {
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .eq('status', 'approved')
+          .order('full_name', { ascending: true })
+
+        if (error) throw error
+        setMembers(data || [])
+      } catch (error) {
+        console.error('Error fetching members:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMembers()
+  }, [])
+
+  // Derived state for filtering
+  const filteredMembers = useMemo(() => {
+    return members.filter(member => {
+      const matchesSearch =
+        member.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.profession.toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchesProfession = selectedProfession === 'all' || member.profession === selectedProfession
+
+      return matchesSearch && matchesProfession
+    })
+  }, [members, searchTerm, selectedProfession])
+
+  // Get unique professions for filter dropdown
+  const professions = useMemo(() => {
+    const unique = Array.from(new Set(members.map(m => m.profession))).sort()
+    return ['all', ...unique]
+  }, [members])
+
+  // Group by first letter
+  const groupedMembers = useMemo(() => {
+    return groupBy(filteredMembers, (member) => member.full_name[0].toUpperCase())
+  }, [filteredMembers])
+
+  const sortedKeys = Object.keys(groupedMembers).sort()
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const handleContactClick = (memberName: string) => {
+    setSelectedMemberName(memberName)
+    setContactDialogOpen(true)
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
-      
+
       <main className="flex-1 pt-16">
         {/* Header */}
         <section className="relative bg-primary text-primary-foreground py-24 md:py-32 overflow-hidden">
@@ -120,71 +117,96 @@ export default function MembersPage() {
               <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">Our Community</Badge>
               <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">Member Directory</h1>
               <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
-                Connect with fellow SACG members across the Greater New Haven area and build lasting relationships.
+                Connect with fellow SACG members across the Greater New Haven area.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Search */}
-        <section className="py-8 bg-background sticky top-16 z-10 border-b">
+        {/* Search & Filter */}
+        <section className="py-8 bg-background sticky top-16 z-10 border-b shadow-sm">
           <div className="container mx-auto px-4">
-            <div className="max-w-2xl mx-auto relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search members by name, location, or role..."
-                className="pl-10"
-              />
+            <div className="flex flex-col md:flex-row gap-4 max-w-4xl mx-auto">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search by name, profession, or location..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="w-full md:w-64">
+                <Select value={selectedProfession} onValueChange={setSelectedProfession}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filter by Profession" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Professions</SelectItem>
+                    {professions.map(prof => (
+                      prof !== 'all' && <SelectItem key={prof} value={prof}>{prof}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Members Grid */}
-        <section className="py-16 bg-muted">
-          <div className="container mx-auto px-4">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-              {members.map((member) => (
-                <Card key={member.email} className="border-2 hover:shadow-xl hover:border-primary/50 transition-all duration-300 group">
-                  <CardHeader>
-                    <div className="flex items-center gap-4 mb-2">
-                      <Avatar className="h-16 w-16 group-hover:scale-110 transition-transform">
-                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                          {member.initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <CardTitle className="text-lg group-hover:text-primary transition-colors">{member.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground font-medium">{member.role}</p>
-                        <p className="text-xs text-muted-foreground">{member.location}</p>
-                      </div>
+        {/* Members List */}
+        <section className="py-16 bg-muted min-h-[500px]">
+          <div className="container mx-auto px-4 max-w-6xl">
+            {loading ? (
+              <div className="text-center py-20 text-muted-foreground">Loading directory...</div>
+            ) : filteredMembers.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-xl text-muted-foreground">No members found matching your criteria.</p>
+                <Button variant="link" onClick={() => { setSearchTerm(''); setSelectedProfession('all') }}>Clear filters</Button>
+              </div>
+            ) : (
+              <div className="space-y-12">
+                {sortedKeys.map(letter => (
+                  <div key={letter} id={`group-${letter}`}>
+                    <h2 className="text-2xl font-bold text-primary mb-6 border-b pb-2">{letter}</h2>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {groupedMembers[letter].map((member) => (
+                        <Card key={member.id} className="border hover:shadow-lg transition-all duration-300">
+                          <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                            <Avatar className="h-12 w-12">
+                              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                {getInitials(member.full_name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="overflow-hidden">
+                              <CardTitle className="text-base truncate">{member.full_name}</CardTitle>
+                              <div className="flex items-center text-xs text-muted-foreground mt-1">
+                                <Briefcase className="w-3 h-3 mr-1" />
+                                <span className="truncate">{member.profession}</span>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2 text-sm text-muted-foreground">
+                              <div className="flex items-center">
+                                <MapPin className="w-4 h-4 mr-2 text-primary/70" />
+                                <span>{member.location}</span>
+                              </div>
+                              <div className="pt-4 mt-4 border-t flex justify-center">
+                                <Button variant="outline" size="sm" className="w-full" onClick={() => handleContactClick(member.full_name)}>
+                                  <Mail className="w-4 h-4 mr-2" />
+                                  Contact Member
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <a 
-                        href={`mailto:${member.email}`}
-                        className="flex items-center gap-3 text-sm text-muted-foreground hover:text-primary transition-colors group/link"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-primary/10 group-hover/link:bg-primary group-hover/link:text-white flex items-center justify-center transition-all">
-                          <Mail className="h-4 w-4" />
-                        </div>
-                        <span className="truncate font-medium">{member.email}</span>
-                      </a>
-                      <a 
-                        href={`tel:${member.phone}`}
-                        className="flex items-center gap-3 text-sm text-muted-foreground hover:text-primary transition-colors group/link"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-primary/10 group-hover/link:bg-primary group-hover/link:text-white flex items-center justify-center transition-all">
-                          <Phone className="h-4 w-4" />
-                        </div>
-                        <span className="font-medium">{member.phone}</span>
-                      </a>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -197,12 +219,11 @@ export default function MembersPage() {
               </CardHeader>
               <CardContent className="pb-12">
                 <p className="text-muted-foreground mb-8 text-lg leading-relaxed max-w-2xl mx-auto">
-                  Become a SACG member and connect with our vibrant community. Members enjoy exclusive access to events, 
-                  networking opportunities, and community resources.
+                  Become a SACG member to access exclusive events and connect with our community.
                 </p>
-                <Button size="lg" asChild>
-                  <a href="/contact">Apply for Membership</a>
-                </Button>
+                <div className="flex justify-center">
+                  <MembershipForm />
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -210,6 +231,30 @@ export default function MembersPage() {
       </main>
 
       <Footer />
+
+      {/* Helper Dialog for Contact Info */}
+      <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Contacting {selectedMemberName}</DialogTitle>
+            <DialogDescription>
+              To protect member privacy, direct contact details are not listed publicly.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-foreground">
+              Please contact the SACG administration to facilitate this connection. You can reach out via our contact form or call us, and we will forward your query to {selectedMemberName}.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button asChild variant="outline">
+                <a href="/contact">Go to Contact Form</a>
+              </Button>
+              {/* Replace this with actual phone/email if known, otherwise generic message remains safe */}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+

@@ -100,7 +100,7 @@ export default function Home() {
                 height={338}
                 priority
                 quality={85}
-                className="rounded-lg shadow-2xl w-full object-cover aspect-video"
+                className="rounded-lg shadow-2xl w-full object-cover aspect-video transition-transform duration-500 hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
@@ -117,7 +117,7 @@ export default function Home() {
                 height={338}
                 priority
                 quality={85}
-                className="rounded-lg shadow-2xl w-full object-cover aspect-video"
+                className="rounded-lg shadow-2xl w-full object-cover aspect-video transition-transform duration-500 hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>

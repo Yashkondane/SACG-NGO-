@@ -7,31 +7,31 @@ import Image from 'next/image'
 
 const founders = [
   {
-    name: 'Dr. Priya Sharma',
+    name: 'Founder 1',
     role: 'Founder & President',
     bio: 'Community leader with over 15 years of experience in cultural advocacy and building bridges between diverse communities.',
-    email: 'priya@sacg.org',
+    email: 'founder1@sacg.org',
     linkedin: '#',
   },
   {
-    name: 'Rajesh Patel',
+    name: 'Founder 2',
     role: 'Co-Founder & Vice President',
     bio: 'Entrepreneur and philanthropist dedicated to supporting community initiatives celebrating South Asian heritage.',
-    email: 'rajesh@sacg.org',
+    email: 'founder2@sacg.org',
     linkedin: '#',
   },
   {
-    name: 'Anjali Mehta',
+    name: 'Founder 3',
     role: 'Director of Programs',
     bio: 'Expert in event management and cultural programming, ensuring every SACG event is meaningful and memorable.',
-    email: 'anjali@sacg.org',
+    email: 'founder3@sacg.org',
     linkedin: '#',
   },
   {
-    name: 'Vikram Singh',
+    name: 'Founder 4',
     role: 'Director of Community Outreach',
     bio: 'Passionate about connecting people and building lasting relationships throughout the Greater New Haven region.',
-    email: 'vikram@sacg.org',
+    email: 'founder4@sacg.org',
     linkedin: '#',
   },
 ]
