@@ -679,98 +679,6 @@ export default function AdminDashboard() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="requests">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Pending Applications</CardTitle>
-                            <CardDescription>Review and approve new member requests.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {pendingMembers.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">No pending requests.</div>
-                            ) : (
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Phone</TableHead>
-                                            <TableHead>Profession</TableHead>
-                                            <TableHead>Location</TableHead>
-                                            <TableHead>Date</TableHead>
-                                            <TableHead className="text-right">Actions</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {pendingMembers.map((member) => (
-                                            <TableRow key={member.id}>
-                                                <TableCell className="font-medium">
-                                                    <div>{member.full_name}</div>
-                                                    <div className="text-xs text-muted-foreground">{member.email}</div>
-                                                </TableCell>
-                                                <TableCell>{member.phone}</TableCell>
-                                                <TableCell>{member.profession}</TableCell>
-                                                <TableCell>{member.location}</TableCell>
-                                                <TableCell>{new Date(member.created_at).toLocaleDateString()}</TableCell>
-                                                <TableCell className="text-right space-x-2">
-                                                    <Button size="sm" variant="outline" className="text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleMemberAction(member.id, 'approve')}>
-                                                        <Check className="h-4 w-4 mr-1" /> Approve
-                                                    </Button>
-                                                    <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleMemberAction(member.id, 'reject')}>
-                                                        <X className="h-4 w-4 mr-1" /> Reject
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="members">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Member Directory</CardTitle>
-                            <CardDescription>Manage all registered members.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Phone</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Profession</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {allMembers.map((member) => (
-                                        <TableRow key={member.id}>
-                                            <TableCell className="font-medium">
-                                                <div>{member.full_name}</div>
-                                                <div className="text-xs text-muted-foreground">{member.email}</div>
-                                            </TableCell>
-                                            <TableCell>{member.phone}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={member.status === 'approved' ? 'default' : member.status === 'rejected' ? 'destructive' : 'secondary'}>
-                                                    {member.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>{member.profession}</TableCell>
-                                            <TableCell className="text-right">
-                                                <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleMemberAction(member.id, 'delete')}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
 
                 <TabsContent value="messages">
                     <Card>
@@ -808,7 +716,7 @@ export default function AdminDashboard() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-            </Tabs>
-        </div>
+            </Tabs >
+        </div >
     )
 }
