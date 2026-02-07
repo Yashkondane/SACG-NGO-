@@ -80,41 +80,15 @@ export default function AboutPage() {
               {/* Text Content - Left Side */}
               <div className="flex-1 space-y-6">
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mt-1">
-                      <span className="text-primary font-bold text-sm">1</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">The Beginning (2010)</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        SACG was established by visionary community members who recognized the need for a unified platform to celebrate South Asian culture and heritage in Greater New Haven.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mt-1">
-                      <span className="text-primary font-bold text-sm">2</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Growth & Evolution</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        What began as small gatherings in living rooms has grown into a thriving organization serving hundreds of families, organizing cultural events, educational programs, and community initiatives.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mt-1">
-                      <span className="text-primary font-bold text-sm">3</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-2">Today & Beyond</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        SACG stands as a beacon of cultural pride and community unity, bringing together people from diverse South Asian backgrounds to celebrate traditions and contribute positively to Greater New Haven.
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    The South Asian Community of Greater New Haven (SACG) was born from a simple yet powerful idea: to create a space where South Asians could come together, celebrate their heritage, and support one another in navigating life in a new country.
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    What started as informal gatherings quickly grew into something much bigger—a movement focused on preserving cultural identity, bridging the gap between traditions, and building a sense of belonging in a broader community. The seed of this effort was sowed one fall evening, when the founders met over chai (of course!), and that set the stage for what has blossomed and continues to grow: our SACG!
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed text-lg">
+                    With several successful and multi-faceted events under our belt, we formally registered as a 501(c)3 in July 2025. We are committed to building a welcoming home for the South Asian community of Greater New Haven—one rooted in culture, connection, and care.
+                  </p>
                 </div>
               </div>
 

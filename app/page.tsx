@@ -205,82 +205,62 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Vision - Image Left, Content Right */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
-            <div className="relative order-2 lg:order-1">
-              <div className="absolute -bottom-4 -left-4 w-full h-full border-4 border-primary/20 rounded-lg -z-10"></div>
-              <Image
-                src="/images/vision.jpg"
-                alt="Community members celebrating diversity and unity"
-                width={600}
-                height={338}
-                priority
-                quality={85}
-                className="rounded-lg shadow-2xl w-full object-cover aspect-video transition-transform duration-500 hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-            <div className="relative order-1 lg:order-2">
-              <div className="space-y-6">
-                <h2 className="text-4xl md:text-5xl font-bold text-primary">Our Vision</h2>
-                <div className="w-20 h-1 bg-accent"></div>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  To be a leading voice in fostering cultural understanding and community development, creating a welcoming
-                  space where South Asian traditions thrive alongside contemporary values.
-                </p>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  We envision a future where our community serves as a bridge between cultures and generations, where every
-                  member feels valued, connected, and empowered to contribute to the rich tapestry of Greater New Haven.
-                </p>
-              </div>
-            </div>
-          </div>
 
-          {/* Our Goal - Content Left, Logo Right with Maroon Background */}
-          <div className="mt-24 bg-[#800020] text-white rounded-2xl overflow-hidden shadow-2xl max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center p-8 md:p-12 lg:p-16">
-              <div>
-                <div className="space-y-6">
-                  <h2 className="text-4xl md:text-5xl font-bold">Our Goal</h2>
-                  <div className="w-20 h-1 bg-white/80"></div>
-                  <p className="text-lg leading-relaxed opacity-95">
-                    To create a thriving, inclusive community where South Asian culture is celebrated, preserved, and shared
-                    with future generations while fostering meaningful connections across all backgrounds.
-                  </p>
-                  <p className="text-lg leading-relaxed opacity-95">
-                    We aim to empower our members through cultural education, community service, and social engagement,
-                    building a legacy of unity, understanding, and mutual respect that enriches the Greater New Haven area
-                    for years to come.
-                  </p>
-                  <ul className="space-y-3 text-base opacity-90">
-                    <li className="flex items-start gap-3">
-                      <span className="text-white/80 mt-1">✓</span>
-                      <span>Strengthen cultural identity and heritage preservation</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-white/80 mt-1">✓</span>
-                      <span>Foster cross-generational and cross-cultural connections</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-white/80 mt-1">✓</span>
-                      <span>Support community members through resources and programs</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="text-white/80 mt-1">✓</span>
-                      <span>Promote civic engagement and social responsibility</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <div className="flex items-center justify-center lg:justify-end">
-                <div className="relative w-full max-w-md aspect-square">
+
+          {/* Our Goal - Logo Left, Content Right with Maroon Background */}
+          <div className="bg-gradient-to-br from-[#800020] to-[#600018] text-white rounded-3xl overflow-hidden shadow-2xl max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-5 gap-8 items-center">
+              {/* Logo Section - Left */}
+              <div className="lg:col-span-2 flex items-center justify-center p-8 md:p-12 lg:pl-16">
+                <div className="relative w-full max-w-sm aspect-square">
+                  <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl"></div>
                   <Image
                     src="/images/logo.jpg"
                     alt="SACG Logo"
                     fill
-                    className="object-contain drop-shadow-2xl"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-contain drop-shadow-2xl relative z-10"
+                    sizes="(max-width: 768px) 100vw, 40vw"
                   />
+                </div>
+              </div>
+
+              {/* Content Section - Right */}
+              <div className="lg:col-span-3 p-8 md:p-12 lg:pr-16">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-4xl md:text-5xl font-bold mb-3">Our Goal</h2>
+                    <div className="w-24 h-1.5 bg-white/90 rounded-full"></div>
+                  </div>
+
+                  <p className="text-lg leading-relaxed opacity-95">
+                    To create a thriving, inclusive community where South Asian culture is celebrated, preserved, and shared
+                    with future generations while fostering meaningful connections across all backgrounds.
+                  </p>
+
+                  <p className="text-base leading-relaxed opacity-90">
+                    We aim to empower our members through cultural education, community service, and social engagement,
+                    building a legacy of unity, understanding, and mutual respect that enriches the Greater New Haven area
+                    for years to come.
+                  </p>
+
+                  <div className="grid sm:grid-cols-2 gap-3 pt-2">
+                    <div className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <span className="text-white/90 mt-0.5 text-lg">✓</span>
+                      <span className="text-sm leading-snug">Strengthen cultural identity and heritage preservation</span>
+                    </div>
+                    <div className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <span className="text-white/90 mt-0.5 text-lg">✓</span>
+                      <span className="text-sm leading-snug">Foster cross-generational and cross-cultural connections</span>
+                    </div>
+                    <div className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <span className="text-white/90 mt-0.5 text-lg">✓</span>
+                      <span className="text-sm leading-snug">Support community members through resources and programs</span>
+                    </div>
+                    <div className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                      <span className="text-white/90 mt-0.5 text-lg">✓</span>
+                      <span className="text-sm leading-snug">Promote civic engagement and social responsibility</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

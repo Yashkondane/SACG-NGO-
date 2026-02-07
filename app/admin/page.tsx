@@ -31,10 +31,8 @@ import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 import { GalleryManager } from '@/components/admin/gallery-manager'
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState('requests')
+    const [activeTab, setActiveTab] = useState('events')
     const [loading, setLoading] = useState(true)
-    const [pendingMembers, setPendingMembers] = useState<any[]>([])
-    const [allMembers, setAllMembers] = useState<any[]>([])
     const [messages, setMessages] = useState<any[]>([])
     const [events, setEvents] = useState<any[]>([])
     const [sponsors, setSponsors] = useState<any[]>([])
@@ -71,19 +69,6 @@ export default function AdminDashboard() {
     const fetchData = async () => {
         setLoading(true)
         try {
-            // Fetch Pending Members
-            const { data: pending } = await supabase
-                .from('members')
-                .select('*')
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false })
-
-            // Fetch All Members
-            const { data: all } = await supabase
-                .from('members')
-                .select('*')
-                .order('full_name', { ascending: true })
-
             // Fetch Messages
             const { data: msgs } = await supabase
                 .from('contacts')
@@ -102,11 +87,6 @@ export default function AdminDashboard() {
                 .select('*')
                 .order('display_order', { ascending: true })
 
-            setPendingMembers(pending || [])
-            setAllMembers(all || [])
-            setMessages(msgs || [])
-            setPendingMembers(pending || [])
-            setAllMembers(all || [])
             setMessages(msgs || [])
             setEvents(evts || [])
             setSponsors(spons || [])
@@ -121,22 +101,7 @@ export default function AdminDashboard() {
         fetchData()
     }, [])
 
-    const handleMemberAction = async (id: string, action: 'approve' | 'reject' | 'delete') => {
-        if (!confirm(`Are you sure you want to ${action} this member?`)) return
 
-        try {
-            if (action === 'delete') {
-                await supabase.from('members').delete().eq('id', id)
-            } else {
-                const status = action === 'approve' ? 'approved' : 'rejected'
-                await supabase.from('members').update({ status }).eq('id', id)
-            }
-            fetchData() // Refresh data
-        } catch (error) {
-            console.error(`Error ${action} member:`, error)
-            alert('Action failed')
-        }
-    }
 
     const handleMessageDelete = async (id: string) => {
         if (!confirm('Delete this message?')) return
@@ -388,7 +353,7 @@ export default function AdminDashboard() {
         router.push('/admin/login')
     }
 
-    if (loading && pendingMembers.length === 0 && allMembers.length === 0) {
+    if (loading) {
         return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>
     }
 
@@ -405,7 +370,7 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-                    <p className="text-muted-foreground">Manage members, events, and view messages</p>
+                    <p className="text-muted-foreground">Manage events, sponsors, and view messages</p>
                 </div>
                 <div className="flex gap-4">
                     <Button variant="outline" onClick={fetchData}><RefreshCw className="mr-2 h-4 w-4" /> Refresh</Button>
@@ -422,17 +387,8 @@ export default function AdminDashboard() {
                 onChange={handleFileSelect}
             />
 
-            <Tabs defaultValue="requests" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <Tabs defaultValue="events" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="requests" className="relative">
-                        Member Requests
-                        {pendingMembers.length > 0 && (
-                            <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 flex items-center justify-center">
-                                {pendingMembers.length}
-                            </Badge>
-                        )}
-                    </TabsTrigger>
-                    <TabsTrigger value="members">All Members</TabsTrigger>
                     <TabsTrigger value="events">Events</TabsTrigger>
                     <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
