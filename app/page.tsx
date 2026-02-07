@@ -1,5 +1,14 @@
 'use client'
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Heart } from 'lucide-react'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
@@ -13,10 +22,18 @@ import {
 } from '@/components/ui/accordion'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Home() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev === 0 ? 1 : 0))
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [])
 
   const whatWeDoItems = [
     {
@@ -42,32 +59,114 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative h-[700px] flex items-center justify-center overflow-hidden">
-        <Image
-          src="/images/hero.jpg"
-          alt="SACG community gathering"
-          fill
-          priority
-          quality={90}
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-black/60" />
+        {/* Slider Images */}
+        <div className="absolute inset-0 w-full h-full">
+          {[
+            '/images/hero.jpg',
+            '/images/sacg-banner.png'
+          ].map((src, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+                }`}
+            >
+              <Image
+                src={src}
+                alt={`SACG Slide ${index + 1}`}
+                fill
+                priority={index === 0}
+                quality={90}
+                className="object-cover"
+                sizes="100vw"
+              />
+              {/* Dark Overlay */}
+              <div className="absolute inset-0 bg-black/50" />
+            </div>
+          ))}
+        </div>
 
+        {/* Content Overlay */}
         <div className="relative z-10 container mx-auto px-4 text-center text-white pt-20">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance drop-shadow-lg">
             Building Bridges, Celebrating Culture
           </h1>
-          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-balance">
+          <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-balance drop-shadow-md">
             The South Asian Community of Greater New Haven brings together diverse voices to create a vibrant, inclusive community
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg">
-              <a href="https://www.zeffy.com/en-US/donation-form/donate-to-sacg-new-haven" target="_blank" rel="noopener noreferrer">Support Our Mission</a>
-            </Button>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="lg" className="text-lg gap-2">
+                  <Heart className="w-5 h-5 fill-current" />
+                  Support Our Mission
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-center text-primary mb-2">
+                    Support Community. Celebrate Culture. Build Belonging.
+                  </DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-6 py-4">
+                  <p className="text-muted-foreground leading-relaxed text-center">
+                    Your generosity helps the South Asian Community of Greater New Haven create meaningful programs, strengthen connections, and ensure our community continues to thrive.
+                  </p>
+
+                  <div className="bg-muted/50 p-4 rounded-lg border">
+                    <p className="text-sm text-center font-medium">
+                      Every donation large or small directly supports our mission to celebrate cultural heritage, foster inclusion, encourage civic engagement, and build a welcoming space for South Asians across Greater New Haven.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-lg text-primary text-center">Ways to Give</h3>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-lg border hover:border-primary/50 transition-colors bg-card">
+                        <h4 className="font-semibold mb-2">One-Time Donation</h4>
+                        <p className="text-sm text-muted-foreground">Make an immediate impact by supporting our current programs and initiatives.</p>
+                      </div>
+                      <div className="p-4 rounded-lg border hover:border-primary/50 transition-colors bg-card">
+                        <h4 className="font-semibold mb-2">Monthly Giving</h4>
+                        <p className="text-sm text-muted-foreground">Become a sustaining supporter and help ensure long-term stability and growth for our community.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center pt-4">
+                    <Button asChild size="lg" className="w-full sm:w-auto text-lg px-8">
+                      <a
+                        href="https://www.zeffy.com/en-US/donation-form/donate-to-sacg-new-haven"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Proceed to Donate
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Button asChild size="lg" variant="secondary" className="text-lg">
               <Link href="/events">Upcoming Events</Link>
             </Button>
           </div>
+        </div>
+
+        {/* Slider Navigation Dots */}
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
+          {[0, 1].map((index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-3 h-3 rounded-full transition-all ${index === currentSlide ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/80'
+                }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </section>
 

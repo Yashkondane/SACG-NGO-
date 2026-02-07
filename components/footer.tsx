@@ -42,13 +42,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/members" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Members
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Blog
+                <Link href="/sponsors" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Sponsors
                 </Link>
               </li>
             </ul>
@@ -58,11 +53,6 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Connect</h4>
             <ul className="space-y-2">
-              <li>
-                <Link href="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
               <li>
                 <Link href="/newsletter" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Newsletter

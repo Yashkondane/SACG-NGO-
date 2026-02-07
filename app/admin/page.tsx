@@ -28,6 +28,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog'
 import { ImageCropperDialog } from '@/components/image-cropper-dialog'
+import { GalleryManager } from '@/components/admin/gallery-manager'
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('requests')
@@ -36,6 +37,10 @@ export default function AdminDashboard() {
     const [allMembers, setAllMembers] = useState<any[]>([])
     const [messages, setMessages] = useState<any[]>([])
     const [events, setEvents] = useState<any[]>([])
+    const [sponsors, setSponsors] = useState<any[]>([])
+
+    // Upload Context State
+    const [uploadContext, setUploadContext] = useState<'event' | 'sponsor'>('event')
 
     // Event Form State
     const [newEventOpen, setNewEventOpen] = useState(false)
@@ -47,7 +52,16 @@ export default function AdminDashboard() {
         location: '',
         excerpt: '',
         content: '',
+        category: 'general',
         image_url: ''
+    })
+
+    // Sponsor Form State
+    const [newSponsorOpen, setNewSponsorOpen] = useState(false)
+    const [newSponsor, setNewSponsor] = useState({
+        name: '',
+        website_url: '',
+        logo_url: ''
     })
 
     const router = useRouter()
@@ -78,12 +92,22 @@ export default function AdminDashboard() {
             const { data: evts } = await supabase
                 .from('events')
                 .select('*')
-                .order('date', { ascending: false }) // Newest events first
+                .order('date', { ascending: false })
+
+            // Fetch Sponsors
+            const { data: spons } = await supabase
+                .from('sponsors')
+                .select('*')
+                .order('display_order', { ascending: true })
 
             setPendingMembers(pending || [])
             setAllMembers(all || [])
             setMessages(msgs || [])
+            setPendingMembers(pending || [])
+            setAllMembers(all || [])
+            setMessages(msgs || [])
             setEvents(evts || [])
+            setSponsors(spons || [])
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -147,28 +171,34 @@ export default function AdminDashboard() {
         setUploading(true)
         try {
             const fileName = `${Math.random()}.jpg`
+            // Determine bucket and path based on context
+            const bucketName = uploadContext === 'event' ? 'event-images' : 'sponsor-logos'
             const filePath = `${fileName}`
 
             // Convert Blob to File
             const file = new File([croppedBlob], fileName, { type: 'image/jpeg' })
 
             const { error: uploadError } = await supabase.storage
-                .from('event-images')
+                .from(bucketName)
                 .upload(filePath, file)
 
             if (uploadError) {
                 if (uploadError.message.includes("Bucket not found")) {
-                    throw new Error("Bucket 'event-images' not found. Please create it in Supabase Storage.")
+                    throw new Error(`Bucket '${bucketName}' not found. Please create it in Supabase Storage.`)
                 }
                 throw uploadError
             }
 
             // Get Public URL
             const { data: { publicUrl } } = supabase.storage
-                .from('event-images')
+                .from(bucketName)
                 .getPublicUrl(filePath)
 
-            setNewEvent({ ...newEvent, image_url: publicUrl })
+            if (uploadContext === 'event') {
+                setNewEvent({ ...newEvent, image_url: publicUrl })
+            } else {
+                setNewSponsor({ ...newSponsor, logo_url: publicUrl })
+            }
             alert('Image uploaded successfully!')
         } catch (error: any) {
             console.error('Error uploading image:', error)
@@ -182,15 +212,58 @@ export default function AdminDashboard() {
     const handleCreateEvent = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
+            // Convert input string to Eastern Time ISO
+            // We treat the input e.g., "2024-10-10T11:00" as 11:00 AM ET.
+
+            const rawDate = new Date(newEvent.date);
+            // Get the specific date strings
+            const targetTimeStr = newEvent.date; // YYYY-MM-DDTHH:mm
+
+            // Heuristic to determine offset (Standard -5 vs Daylight -4)
+            // We create a date object and check if it falls in DST for NY.
+            // Since JS Date doesn't support "set timezone", we use string manipulation.
+
+            // 1. Create a UTC date from the string
+            const utcDate = new Date(targetTimeStr + 'Z');
+
+            // 2. Format this UTC date to NY time to see the "shift"
+            const nyString = utcDate.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false });
+            // This tells us what time it IS in NY if the input was UTC.
+
+            // This is getting complicated. Simpler approach:
+            // Append the offset manually.
+
+            // Check if date is in DST (Approximate for North America: March to Nov)
+            const month = rawDate.getMonth() + 1; // 1-12
+            // Simplistic DST check: March to November. 
+            // Better: Let's assume the user enters local time and we shift it.
+            // BUT user is likely remote.
+
+            // ROBUST SOLUTION:
+            // Construct a string with explicit offset.
+            // We'll use a library-less way to find offset for the date.
+
+            const getOffset = (d: Date) => {
+                // Returns '-04:00' or '-05:00' for NY
+                const str = d.toLocaleString('en-US', { timeZone: 'America/New_York', timeZoneName: 'longOffset' });
+                const extract = str.match(/GMT([+-]\d{2}:\d{2})/);
+                return extract ? extract[1] : '-05:00'; // Fallback to EST
+            };
+
+            const offset = getOffset(new Date(newEvent.date));
+            const finalIso = `${newEvent.date}:00${offset}`;
+
+            // Now we have "2024-10-10T11:00:00-04:00" for example.
+
             const { error } = await supabase
                 .from('events')
-                .insert([newEvent])
+                .insert([{ ...newEvent, date: finalIso }])
 
             if (error) throw error
 
             alert('Event created successfully!')
             setNewEventOpen(false)
-            setNewEvent({ title: '', date: '', location: '', excerpt: '', content: '', image_url: '' })
+            setNewEvent({ title: '', date: '', location: '', excerpt: '', content: '', category: 'general', image_url: '' })
             fetchData()
         } catch (error: any) {
             console.error('Error creating event:', error)
@@ -206,6 +279,46 @@ export default function AdminDashboard() {
         } catch (error) {
             console.error('Error deleting event:', error)
         }
+    }
+
+
+    const handleCreateSponsor = async (e: React.FormEvent) => {
+        e.preventDefault()
+        try {
+            const { error } = await supabase
+                .from('sponsors')
+                .insert([newSponsor])
+
+            if (error) throw error
+
+            alert('Sponsor added successfully!')
+            setNewSponsorOpen(false)
+            setNewSponsor({ name: '', website_url: '', logo_url: '' })
+            fetchData()
+        } catch (error: any) {
+            console.error('Error adding sponsor:', error)
+            alert(`Failed to add sponsor: ${error.message}`)
+        }
+    }
+
+    const handleDeleteSponsor = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this sponsor?')) return
+        try {
+            await supabase.from('sponsors').delete().eq('id', id)
+            fetchData()
+        } catch (error) {
+            console.error('Error deleting sponsor:', error)
+        }
+    }
+
+    const initiateSponsorUpload = () => {
+        setUploadContext('sponsor')
+        fileInputRef.current?.click()
+    }
+
+    const initiateEventUpload = () => {
+        setUploadContext('event')
+        fileInputRef.current?.click()
     }
 
 
@@ -225,7 +338,7 @@ export default function AdminDashboard() {
                 onOpenChange={setCropperOpen}
                 imageSrc={selectedImageSrc}
                 onCropComplete={handleCropComplete}
-                aspect={16 / 9}
+                aspect={uploadContext === 'event' ? 16 / 9 : 1}
             />
 
             <div className="flex justify-between items-center mb-8">
@@ -239,6 +352,15 @@ export default function AdminDashboard() {
                 </div>
             </div>
 
+            {/* Hidden File Input for Image Uploads - Moved outside TabsContent to ensure availability */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileSelect}
+            />
+
             <Tabs defaultValue="requests" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="requests" className="relative">
@@ -251,6 +373,7 @@ export default function AdminDashboard() {
                     </TabsTrigger>
                     <TabsTrigger value="members">All Members</TabsTrigger>
                     <TabsTrigger value="events">Events</TabsTrigger>
+                    <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
                 </TabsList>
 
@@ -276,6 +399,18 @@ export default function AdminDashboard() {
                                             <Label htmlFor="title">Event Title *</Label>
                                             <Input id="title" required value={newEvent.title} onChange={e => setNewEvent({ ...newEvent, title: e.target.value })} />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="category">Category</Label>
+                                            <select
+                                                id="category"
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                value={newEvent.category}
+                                                onChange={e => setNewEvent({ ...newEvent, category: e.target.value })}
+                                            >
+                                                <option value="general">General</option>
+                                                <option value="health">Health Awareness</option>
+                                            </select>
+                                        </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="date">Date & Time *</Label>
@@ -290,17 +425,10 @@ export default function AdminDashboard() {
                                         <div className="space-y-2">
                                             <Label htmlFor="image">Event Image</Label>
                                             <div className="flex items-center gap-4">
-                                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                                                <Button type="button" variant="outline" onClick={initiateEventUpload} disabled={uploading}>
                                                     {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                                                     {uploading ? 'Processing...' : 'Select & Crop Image'}
                                                 </Button>
-                                                <input
-                                                    type="file"
-                                                    ref={fileInputRef}
-                                                    className="hidden"
-                                                    accept="image/*"
-                                                    onChange={handleFileSelect}
-                                                />
                                                 {newEvent.image_url && <span className="text-sm text-green-600">Image uploaded!</span>}
                                             </div>
                                         </div>
@@ -314,6 +442,9 @@ export default function AdminDashboard() {
                                             <Textarea id="content" required placeholder="Full event details..." className="h-32" value={newEvent.content} onChange={e => setNewEvent({ ...newEvent, content: e.target.value })} />
                                         </div>
                                         <Button type="submit" className="w-full" disabled={uploading}>Create Event</Button>
+                                        <p className="text-xs text-muted-foreground text-center mt-2">
+                                            Note: You can add Gallery images in the event list after creating the event.
+                                        </p>
                                     </form>
                                 </DialogContent>
                             </Dialog>
@@ -335,10 +466,89 @@ export default function AdminDashboard() {
                                         {events.map((event) => (
                                             <TableRow key={event.id}>
                                                 <TableCell className="font-medium">{event.title}</TableCell>
-                                                <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
+                                                <TableCell>{new Date(event.date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}</TableCell>
                                                 <TableCell>{event.location}</TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteEvent(event.id)}>
+                                                    <div className="flex justify-end gap-2">
+                                                        <GalleryManager eventId={event.id} eventTitle={event.title} />
+                                                        <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteEvent(event.id)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="sponsors">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Sponsors Management</CardTitle>
+                                <CardDescription>Manage ecosystem sponsors and logos.</CardDescription>
+                            </div>
+                            <Dialog open={newSponsorOpen} onOpenChange={setNewSponsorOpen}>
+                                <DialogTrigger asChild>
+                                    <Button><Plus className="mr-2 h-4 w-4" /> Add Sponsor</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Sponsor</DialogTitle>
+                                        <DialogDescription>1:1 aspect ratio required for logos (optional).</DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleCreateSponsor} className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="sponsor-name">Sponsor Name *</Label>
+                                            <Input id="sponsor-name" required value={newSponsor.name} onChange={e => setNewSponsor({ ...newSponsor, name: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="sponsor-url">Website URL</Label>
+                                            <Input id="sponsor-url" placeholder="https://..." value={newSponsor.website_url} onChange={e => setNewSponsor({ ...newSponsor, website_url: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="sponsor-logo">Logo (Optional, 1:1 Ratio)</Label>
+                                            <div className="flex items-center gap-4">
+                                                <Button type="button" variant="outline" onClick={initiateSponsorUpload} disabled={uploading}>
+                                                    {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                                    {uploading ? 'Processing...' : 'Select & Crop Logo'}
+                                                </Button>
+                                                {/* Hidden input shared by both uploaders, handled by ref */}
+                                                {newSponsor.logo_url && <span className="text-sm text-green-600">Logo uploaded!</span>}
+                                            </div>
+                                        </div>
+                                        <Button type="submit" className="w-full" disabled={uploading}>Add Sponsor</Button>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </CardHeader>
+                        <CardContent>
+                            {sponsors.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">No sponsors added yet.</div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Logo</TableHead>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Website</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {sponsors.map((sponsor) => (
+                                            <TableRow key={sponsor.id}>
+                                                <TableCell>
+                                                    <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 w-10 object-contain rounded" />
+                                                </TableCell>
+                                                <TableCell className="font-medium">{sponsor.name}</TableCell>
+                                                <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">{sponsor.website_url}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteSponsor(sponsor.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </TableCell>

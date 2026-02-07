@@ -5,36 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Mail, Linkedin, Users, Heart, Calendar, Award } from 'lucide-react'
 import Image from 'next/image'
 
-const founders = [
-  {
-    name: 'Founder 1',
-    role: 'Founder & President',
-    bio: 'Community leader with over 15 years of experience in cultural advocacy and building bridges between diverse communities.',
-    email: 'founder1@sacg.org',
-    linkedin: '#',
-  },
-  {
-    name: 'Founder 2',
-    role: 'Co-Founder & Vice President',
-    bio: 'Entrepreneur and philanthropist dedicated to supporting community initiatives celebrating South Asian heritage.',
-    email: 'founder2@sacg.org',
-    linkedin: '#',
-  },
-  {
-    name: 'Founder 3',
-    role: 'Director of Programs',
-    bio: 'Expert in event management and cultural programming, ensuring every SACG event is meaningful and memorable.',
-    email: 'founder3@sacg.org',
-    linkedin: '#',
-  },
-  {
-    name: 'Founder 4',
-    role: 'Director of Community Outreach',
-    bio: 'Passionate about connecting people and building lasting relationships throughout the Greater New Haven region.',
-    email: 'founder4@sacg.org',
-    linkedin: '#',
-  },
-]
+
 
 const stats = [
   {
@@ -165,67 +136,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Founders & Directors */}
-        <section className="py-20 bg-muted">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 text-balance">Meet Our Founders</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                Dedicated leaders committed to celebrating culture and building community
-              </p>
-            </div>
 
-            {/* Portrait Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-              {founders.map((founder, index) => (
-                <div key={founder.name} className="group">
-                  <Card className="overflow-hidden border-2 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 h-full">
-                    {/* Portrait Image with Overlay Info */}
-                    <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5">
-                      {/* Placeholder Background Pattern */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/80 to-primary" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-6xl font-bold text-white/20">
-                          {founder.name.split(' ').map(n => n[0]).join('')}
-                        </span>
-                      </div>
-
-                      {/* Gradient Overlay for Text Readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                      {/* Info Overlay on Image */}
-                      <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                        <h3 className="font-bold text-xl mb-1 text-balance">{founder.name}</h3>
-                        <p className="text-sm text-white/90 mb-3 font-medium">{founder.role}</p>
-                        <p className="text-sm text-white/80 leading-relaxed mb-4 line-clamp-3">
-                          {founder.bio}
-                        </p>
-
-                        {/* Social Links */}
-                        <div className="flex gap-3">
-                          <a
-                            href={`mailto:${founder.email}`}
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all"
-                            aria-label={`Email ${founder.name}`}
-                          >
-                            <Mail className="h-4 w-4" />
-                          </a>
-                          <a
-                            href={founder.linkedin}
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all"
-                            aria-label={`LinkedIn profile of ${founder.name}`}
-                          >
-                            <Linkedin className="h-4 w-4" />
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Values */}
         <section className="py-20 bg-background">
