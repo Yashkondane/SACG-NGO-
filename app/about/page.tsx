@@ -122,8 +122,8 @@ export default function AboutPage() {
               <div className="flex-1 w-full">
                 <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/5">
                   <Image
-                    src="/images/about-us.jpg"
-                    alt="SACG community leaders at an outdoor event"
+                    src="/images/about-team.jpg"
+                    alt="SACG community members in traditional attire"
                     fill
                     loading="lazy"
                     quality={85}

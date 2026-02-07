@@ -193,7 +193,7 @@ export default function Home() {
             <div className="relative">
               <div className="absolute -bottom-4 -right-4 w-full h-full border-4 border-primary/20 rounded-lg -z-10"></div>
               <Image
-                src="/images/mission.jpg"
+                src="/images/about-us.jpg"
                 alt="Community members in traditional attire celebrating culture"
                 width={600}
                 height={338}
@@ -232,6 +232,56 @@ export default function Home() {
                   We envision a future where our community serves as a bridge between cultures and generations, where every
                   member feels valued, connected, and empowered to contribute to the rich tapestry of Greater New Haven.
                 </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Our Goal - Content Left, Logo Right with Maroon Background */}
+          <div className="mt-24 bg-[#800020] text-white rounded-2xl overflow-hidden shadow-2xl max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center p-8 md:p-12 lg:p-16">
+              <div>
+                <div className="space-y-6">
+                  <h2 className="text-4xl md:text-5xl font-bold">Our Goal</h2>
+                  <div className="w-20 h-1 bg-white/80"></div>
+                  <p className="text-lg leading-relaxed opacity-95">
+                    To create a thriving, inclusive community where South Asian culture is celebrated, preserved, and shared
+                    with future generations while fostering meaningful connections across all backgrounds.
+                  </p>
+                  <p className="text-lg leading-relaxed opacity-95">
+                    We aim to empower our members through cultural education, community service, and social engagement,
+                    building a legacy of unity, understanding, and mutual respect that enriches the Greater New Haven area
+                    for years to come.
+                  </p>
+                  <ul className="space-y-3 text-base opacity-90">
+                    <li className="flex items-start gap-3">
+                      <span className="text-white/80 mt-1">✓</span>
+                      <span>Strengthen cultural identity and heritage preservation</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-white/80 mt-1">✓</span>
+                      <span>Foster cross-generational and cross-cultural connections</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-white/80 mt-1">✓</span>
+                      <span>Support community members through resources and programs</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="text-white/80 mt-1">✓</span>
+                      <span>Promote civic engagement and social responsibility</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div className="flex items-center justify-center lg:justify-end">
+                <div className="relative w-full max-w-md aspect-square">
+                  <Image
+                    src="/images/logo.jpg"
+                    alt="SACG Logo"
+                    fill
+                    className="object-contain drop-shadow-2xl"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
               </div>
             </div>
           </div>

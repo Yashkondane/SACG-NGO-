@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Check, X, Trash2, RefreshCw, Plus, Calendar as CalendarIcon, Upload } from 'lucide-react'
+import { Loader2, Check, X, Trash2, RefreshCw, Plus, Calendar as CalendarIcon, Upload, Pencil } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -44,6 +44,8 @@ export default function AdminDashboard() {
 
     // Event Form State
     const [newEventOpen, setNewEventOpen] = useState(false)
+    const [editEventOpen, setEditEventOpen] = useState(false)
+    const [editingEvent, setEditingEvent] = useState<any>(null)
     const [uploading, setUploading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [newEvent, setNewEvent] = useState({
@@ -195,7 +197,12 @@ export default function AdminDashboard() {
                 .getPublicUrl(filePath)
 
             if (uploadContext === 'event') {
-                setNewEvent({ ...newEvent, image_url: publicUrl })
+                // Check if we're editing or creating
+                if (editingEvent) {
+                    setEditingEvent({ ...editingEvent, image_url: publicUrl })
+                } else {
+                    setNewEvent({ ...newEvent, image_url: publicUrl })
+                }
             } else {
                 setNewSponsor({ ...newSponsor, logo_url: publicUrl })
             }
@@ -278,6 +285,60 @@ export default function AdminDashboard() {
             fetchData()
         } catch (error) {
             console.error('Error deleting event:', error)
+        }
+    }
+
+    const handleEditEvent = (event: any) => {
+        // Convert the stored ISO date to datetime-local format
+        const date = new Date(event.date)
+        const localDateTime = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+            .toISOString()
+            .slice(0, 16)
+
+        setEditingEvent({
+            ...event,
+            date: localDateTime
+        })
+        setEditEventOpen(true)
+    }
+
+    const handleUpdateEvent = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!editingEvent) return
+
+        try {
+            // Convert input string to Eastern Time ISO (same logic as create)
+            const getOffset = (d: Date) => {
+                const str = d.toLocaleString('en-US', { timeZone: 'America/New_York', timeZoneName: 'longOffset' });
+                const extract = str.match(/GMT([+-]\d{2}:\d{2})/);
+                return extract ? extract[1] : '-05:00';
+            };
+
+            const offset = getOffset(new Date(editingEvent.date));
+            const finalIso = `${editingEvent.date}:00${offset}`;
+
+            const { error } = await supabase
+                .from('events')
+                .update({
+                    title: editingEvent.title,
+                    date: finalIso,
+                    location: editingEvent.location,
+                    excerpt: editingEvent.excerpt,
+                    content: editingEvent.content,
+                    category: editingEvent.category,
+                    image_url: editingEvent.image_url
+                })
+                .eq('id', editingEvent.id)
+
+            if (error) throw error
+
+            alert('Event updated successfully!')
+            setEditEventOpen(false)
+            setEditingEvent(null)
+            fetchData()
+        } catch (error: any) {
+            console.error('Error updating event:', error)
+            alert(`Failed to update event: ${error.message}`)
         }
     }
 
@@ -448,6 +509,104 @@ export default function AdminDashboard() {
                                     </form>
                                 </DialogContent>
                             </Dialog>
+
+                            {/* Edit Event Dialog */}
+                            <Dialog open={editEventOpen} onOpenChange={setEditEventOpen}>
+                                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                                    <DialogHeader>
+                                        <DialogTitle>Edit Event</DialogTitle>
+                                        <DialogDescription>Update the event details.</DialogDescription>
+                                    </DialogHeader>
+                                    {editingEvent && (
+                                        <form onSubmit={handleUpdateEvent} className="space-y-4 py-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-title">Event Title *</Label>
+                                                <Input
+                                                    id="edit-title"
+                                                    required
+                                                    value={editingEvent.title}
+                                                    onChange={e => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-category">Category</Label>
+                                                <select
+                                                    id="edit-category"
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    value={editingEvent.category}
+                                                    onChange={e => setEditingEvent({ ...editingEvent, category: e.target.value })}
+                                                >
+                                                    <option value="general">General</option>
+                                                    <option value="health">Health Awareness</option>
+                                                </select>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="edit-date">Date & Time *</Label>
+                                                    <Input
+                                                        id="edit-date"
+                                                        type="datetime-local"
+                                                        required
+                                                        value={editingEvent.date}
+                                                        onChange={e => setEditingEvent({ ...editingEvent, date: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="edit-location">Location *</Label>
+                                                    <Input
+                                                        id="edit-location"
+                                                        required
+                                                        value={editingEvent.location}
+                                                        onChange={e => setEditingEvent({ ...editingEvent, location: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-image">Event Image</Label>
+                                                <div className="flex items-center gap-4">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setUploadContext('event')
+                                                            initiateEventUpload()
+                                                        }}
+                                                        disabled={uploading}
+                                                    >
+                                                        {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                                        {uploading ? 'Processing...' : 'Change Image'}
+                                                    </Button>
+                                                    {editingEvent.image_url && <span className="text-sm text-green-600">Image set!</span>}
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-excerpt">Short Description (Excerpt) *</Label>
+                                                <Textarea
+                                                    id="edit-excerpt"
+                                                    required
+                                                    placeholder="Brief summary for the event card..."
+                                                    value={editingEvent.excerpt}
+                                                    onChange={e => setEditingEvent({ ...editingEvent, excerpt: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-content">Full Details *</Label>
+                                                <Textarea
+                                                    id="edit-content"
+                                                    required
+                                                    placeholder="Full event details..."
+                                                    className="h-32"
+                                                    value={editingEvent.content}
+                                                    onChange={e => setEditingEvent({ ...editingEvent, content: e.target.value })}
+                                                />
+                                            </div>
+                                            <Button type="submit" className="w-full" disabled={uploading}>Update Event</Button>
+                                        </form>
+                                    )}
+                                </DialogContent>
+                            </Dialog>
                         </CardHeader>
                         <CardContent>
                             {events.length === 0 ? (
@@ -470,6 +629,9 @@ export default function AdminDashboard() {
                                                 <TableCell>{event.location}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
+                                                        <Button size="icon" variant="ghost" className="text-blue-500 hover:text-blue-700 hover:bg-blue-50" onClick={() => handleEditEvent(event)}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
                                                         <GalleryManager eventId={event.id} eventTitle={event.title} />
                                                         <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteEvent(event.id)}>
                                                             <Trash2 className="h-4 w-4" />

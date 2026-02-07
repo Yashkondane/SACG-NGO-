@@ -11,6 +11,9 @@ const _geistMono = Geist_Mono({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'SACG - South Asian Community of Greater New Haven',
   description: 'Building bridges, celebrating culture, and fostering community growth in the Greater New Haven area.',
+  icons: {
+    icon: '/icon.svg',
+  },
   generator: 'v0.app',
 }
 

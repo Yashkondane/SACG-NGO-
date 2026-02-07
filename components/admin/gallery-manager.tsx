@@ -54,6 +54,69 @@ export function GalleryManager({ eventId, eventTitle }: GalleryManagerProps) {
         }
     }
 
+    async function compressImage(file: File): Promise<Blob> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.readAsDataURL(file)
+            reader.onload = (e) => {
+                const img = document.createElement('img')
+                img.src = e.target?.result as string
+                img.onload = () => {
+                    const canvas = document.createElement('canvas')
+                    const ctx = canvas.getContext('2d')
+                    if (!ctx) {
+                        reject(new Error('Could not get canvas context'))
+                        return
+                    }
+
+                    // Max dimensions
+                    const MAX_WIDTH = 1920
+                    const MAX_HEIGHT = 1920
+                    let width = img.width
+                    let height = img.height
+
+                    // Calculate new dimensions while maintaining aspect ratio
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height = height * (MAX_WIDTH / width)
+                            width = MAX_WIDTH
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width = width * (MAX_HEIGHT / height)
+                            height = MAX_HEIGHT
+                        }
+                    }
+
+                    canvas.width = width
+                    canvas.height = height
+
+                    // Draw white background
+                    ctx.fillStyle = 'white'
+                    ctx.fillRect(0, 0, width, height)
+
+                    // Draw image
+                    ctx.drawImage(img, 0, 0, width, height)
+
+                    // Convert to blob with compression
+                    canvas.toBlob(
+                        (blob) => {
+                            if (blob) {
+                                resolve(blob)
+                            } else {
+                                reject(new Error('Failed to compress image'))
+                            }
+                        },
+                        'image/jpeg',
+                        0.85 // 85% quality
+                    )
+                }
+                img.onerror = () => reject(new Error('Failed to load image'))
+            }
+            reader.onerror = () => reject(new Error('Failed to read file'))
+        })
+    }
+
     async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
         if (!e.target.files || e.target.files.length === 0) return
 
@@ -61,14 +124,17 @@ export function GalleryManager({ eventId, eventTitle }: GalleryManagerProps) {
         const files = Array.from(e.target.files)
 
         for (const file of files) {
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${eventId}/${generateId()}.${fileExt}`
-            const filePath = `${fileName}`
-
             try {
+                // Compress the image first
+                const compressedBlob = await compressImage(file)
+
+                const fileExt = 'jpg' // Always use jpg after compression
+                const fileName = `${eventId}/${generateId()}.${fileExt}`
+                const filePath = `${fileName}`
+
                 const { error: uploadError } = await supabase.storage
                     .from('event-images')
-                    .upload(filePath, file)
+                    .upload(filePath, compressedBlob)
 
                 if (uploadError) throw uploadError
 
@@ -87,7 +153,7 @@ export function GalleryManager({ eventId, eventTitle }: GalleryManagerProps) {
 
             } catch (error) {
                 console.error('Error uploading image:', error)
-                alert('Failed to upload image')
+                alert(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
             }
         }
 
