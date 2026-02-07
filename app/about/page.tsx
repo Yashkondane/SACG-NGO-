@@ -9,11 +9,6 @@ import Image from 'next/image'
 
 const stats = [
   {
-    icon: Users,
-    value: '500+',
-    label: 'Active Members',
-  },
-  {
     icon: Calendar,
     value: '50+',
     label: 'Annual Events',
@@ -53,7 +48,7 @@ export default function AboutPage() {
         {/* Stats Section */}
         <section className="py-12 bg-background border-b">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">

@@ -304,19 +304,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-balance">Frequently Asked Questions</h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Find answers to common questions about SACG membership and activities
+            Find answers to common questions about SACG and our activities
           </p>
           <Accordion type="single" collapsible className="max-w-3xl mx-auto bg-background rounded-lg shadow-sm">
             <AccordionItem value="item-1" className="px-6">
-              <AccordionTrigger className="text-left text-lg font-semibold hover:text-primary">
-                How do I become a member of SACG?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                Becoming a member is easy! Simply visit our Members page and fill out the membership form. You can choose between individual and family membership options. Once submitted, our team will reach out to you with payment details and welcome materials.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2" className="px-6">
               <AccordionTrigger className="text-left text-lg font-semibold hover:text-primary">
                 What types of events does SACG organize?
               </AccordionTrigger>
@@ -325,7 +316,7 @@ export default function Home() {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-3" className="px-6">
+            <AccordionItem value="item-2" className="px-6">
               <AccordionTrigger className="text-left text-lg font-semibold hover:text-primary">
                 Do I need to be South Asian to join SACG?
               </AccordionTrigger>
@@ -334,7 +325,7 @@ export default function Home() {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-4" className="px-6">
+            <AccordionItem value="item-3" className="px-6">
               <AccordionTrigger className="text-left text-lg font-semibold hover:text-primary">
                 How can I volunteer with SACG?
               </AccordionTrigger>
@@ -343,16 +334,7 @@ export default function Home() {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="item-5" className="px-6">
-              <AccordionTrigger className="text-left text-lg font-semibold hover:text-primary">
-                What are the membership fees?
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed">
-                We offer flexible membership options to suit different needs. Individual membership is $50 per year, and family membership (up to 4 members) is $100 per year. Student memberships are available at a discounted rate of $25 per year. All fees go directly toward organizing community events and programs.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-6" className="px-6 border-b-0">
+            <AccordionItem value="item-4" className="px-6 border-b-0">
               <AccordionTrigger className="text-left text-lg font-semibold hover:text-primary">
                 Are SACG events family-friendly?
               </AccordionTrigger>
