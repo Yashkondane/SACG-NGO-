@@ -13,6 +13,8 @@ import { Mail, Search, Briefcase, MapPin } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { MembershipForm } from '@/components/membership-form'
 import { groupBy } from 'lodash'
+import { FadeIn } from '@/components/ui/fade-in'
+import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
 import {
   Dialog,
   DialogContent,
@@ -114,11 +116,17 @@ export default function MembersPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80 opacity-90" />
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
-              <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">Our Community</Badge>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">Member Directory</h1>
-              <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
-                Connect with fellow SACG members across the Greater New Haven area.
-              </p>
+              <FadeIn direction="up">
+                <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">Our Community</Badge>
+              </FadeIn>
+              <FadeIn delay={0.2} direction="up">
+                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">Member Directory</h1>
+              </FadeIn>
+              <FadeIn delay={0.4} direction="up">
+                <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
+                  Connect with fellow SACG members across the Greater New Haven area.
+                </p>
+              </FadeIn>
             </div>
           </div>
         </section>
@@ -126,31 +134,33 @@ export default function MembersPage() {
         {/* Search & Filter */}
         <section className="py-8 bg-background sticky top-16 z-10 border-b shadow-sm">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row gap-4 max-w-4xl mx-auto">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search by name, profession, or location..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <FadeIn direction="down" duration={0.3}>
+              <div className="flex flex-col md:flex-row gap-4 max-w-4xl mx-auto">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search by name, profession, or location..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="w-full md:w-64">
+                  <Select value={selectedProfession} onValueChange={setSelectedProfession}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Filter by Profession" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Professions</SelectItem>
+                      {professions.map(prof => (
+                        prof !== 'all' && <SelectItem key={prof} value={prof}>{prof}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="w-full md:w-64">
-                <Select value={selectedProfession} onValueChange={setSelectedProfession}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by Profession" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Professions</SelectItem>
-                    {professions.map(prof => (
-                      prof !== 'all' && <SelectItem key={prof} value={prof}>{prof}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            </FadeIn>
           </div>
         </section>
 
@@ -168,41 +178,45 @@ export default function MembersPage() {
               <div className="space-y-12">
                 {sortedKeys.map(letter => (
                   <div key={letter} id={`group-${letter}`}>
-                    <h2 className="text-2xl font-bold text-primary mb-6 border-b pb-2">{letter}</h2>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <FadeIn direction="up" offset={20}>
+                      <h2 className="text-2xl font-bold text-primary mb-6 border-b pb-2">{letter}</h2>
+                    </FadeIn>
+                    <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {groupedMembers[letter].map((member) => (
-                        <Card key={member.id} className="border hover:shadow-lg transition-all duration-300">
-                          <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                            <Avatar className="h-12 w-12">
-                              <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                                {getInitials(member.full_name)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="overflow-hidden">
-                              <CardTitle className="text-base truncate">{member.full_name}</CardTitle>
-                              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                                <Briefcase className="w-3 h-3 mr-1" />
-                                <span className="truncate">{member.profession}</span>
+                        <StaggerItem key={member.id}>
+                          <Card className="border hover:shadow-lg transition-all duration-300 h-full">
+                            <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                              <Avatar className="h-12 w-12">
+                                <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                  {getInitials(member.full_name)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="overflow-hidden">
+                                <CardTitle className="text-base truncate">{member.full_name}</CardTitle>
+                                <div className="flex items-center text-xs text-muted-foreground mt-1">
+                                  <Briefcase className="w-3 h-3 mr-1" />
+                                  <span className="truncate">{member.profession}</span>
+                                </div>
                               </div>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2 text-sm text-muted-foreground">
-                              <div className="flex items-center">
-                                <MapPin className="w-4 h-4 mr-2 text-primary/70" />
-                                <span>{member.location}</span>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2 text-sm text-muted-foreground">
+                                <div className="flex items-center">
+                                  <MapPin className="w-4 h-4 mr-2 text-primary/70" />
+                                  <span>{member.location}</span>
+                                </div>
+                                <div className="pt-4 mt-4 border-t flex justify-center">
+                                  <Button variant="outline" size="sm" className="w-full" onClick={() => handleContactClick(member.full_name)}>
+                                    <Mail className="w-4 h-4 mr-2" />
+                                    Contact Member
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="pt-4 mt-4 border-t flex justify-center">
-                                <Button variant="outline" size="sm" className="w-full" onClick={() => handleContactClick(member.full_name)}>
-                                  <Mail className="w-4 h-4 mr-2" />
-                                  Contact Member
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                            </CardContent>
+                          </Card>
+                        </StaggerItem>
                       ))}
-                    </div>
+                    </StaggerContainer>
                   </div>
                 ))}
               </div>
@@ -213,19 +227,21 @@ export default function MembersPage() {
         {/* Join CTA */}
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4">
-            <Card className="max-w-3xl mx-auto text-center border-2 shadow-xl">
-              <CardHeader className="pt-12">
-                <CardTitle className="text-3xl md:text-4xl mb-4 text-balance">Want to Join Our Directory?</CardTitle>
-              </CardHeader>
-              <CardContent className="pb-12">
-                <p className="text-muted-foreground mb-8 text-lg leading-relaxed max-w-2xl mx-auto">
-                  Become a SACG member to access exclusive events and connect with our community.
-                </p>
-                <div className="flex justify-center">
-                  <MembershipForm />
-                </div>
-              </CardContent>
-            </Card>
+            <FadeIn direction="up">
+              <Card className="max-w-3xl mx-auto text-center border-2 shadow-xl">
+                <CardHeader className="pt-12">
+                  <CardTitle className="text-3xl md:text-4xl mb-4 text-balance">Want to Join Our Directory?</CardTitle>
+                </CardHeader>
+                <CardContent className="pb-12">
+                  <p className="text-muted-foreground mb-8 text-lg leading-relaxed max-w-2xl mx-auto">
+                    Become a SACG member to access exclusive events and connect with our community.
+                  </p>
+                  <div className="flex justify-center">
+                    <MembershipForm />
+                  </div>
+                </CardContent>
+              </Card>
+            </FadeIn>
           </div>
         </section>
       </main>

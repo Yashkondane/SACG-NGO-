@@ -11,6 +11,11 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import {
+  Dialog,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { SupportDialogContent } from '@/components/support-dialog-content'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -93,9 +98,12 @@ export function Navigation() {
               Newsletter
             </Link>
 
-            <Button asChild className="ml-2">
-              <a href="https://www.zeffy.com/en-US/donation-form/donate-to-sacg-new-haven" target="_blank" rel="noopener noreferrer">Donate</a>
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="ml-2">Donate</Button>
+              </DialogTrigger>
+              <SupportDialogContent />
+            </Dialog>
           </div>
 
           {/* Mobile Navigation */}
@@ -128,9 +136,12 @@ export function Navigation() {
                   <Link href="/sponsors" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Sponsors</Link>
                   <Link href="/newsletter" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Newsletter</Link>
 
-                  <Button asChild className="mt-4">
-                    <a href="https://www.zeffy.com/en-US/donation-form/donate-to-sacg-new-haven" target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)}>Donate</a>
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button className="mt-4">Donate</Button>
+                    </DialogTrigger>
+                    <SupportDialogContent />
+                  </Dialog>
                 </div>
               </SheetContent>
             </Sheet>

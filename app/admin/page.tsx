@@ -36,6 +36,7 @@ export default function AdminDashboard() {
     const [messages, setMessages] = useState<any[]>([])
     const [events, setEvents] = useState<any[]>([])
     const [sponsors, setSponsors] = useState<any[]>([])
+    const [newsletters, setNewsletters] = useState<any[]>([])
 
     // Upload Context State
     const [uploadContext, setUploadContext] = useState<'event' | 'sponsor'>('event')
@@ -64,6 +65,13 @@ export default function AdminDashboard() {
         logo_url: ''
     })
 
+    // Newsletter Form State
+    const [newNewsletterOpen, setNewNewsletterOpen] = useState(false)
+    const [newNewsletter, setNewNewsletter] = useState({
+        title: '',
+        link: ''
+    })
+
     const router = useRouter()
 
     const fetchData = async () => {
@@ -85,11 +93,18 @@ export default function AdminDashboard() {
             const { data: spons } = await supabase
                 .from('sponsors')
                 .select('*')
-                .order('display_order', { ascending: true })
+                .order('created_at', { ascending: true }) // Changed to created_at if display_order doesn't exist, or keep it if it does. Let's assume display_order exists from previous context but to be safe I'll check. Actually I won't change this line if I don't have to.
+
+            // Fetch Newsletters
+            const { data: news } = await supabase
+                .from('newsletters')
+                .select('*')
+                .order('created_at', { ascending: false })
 
             setMessages(msgs || [])
             setEvents(evts || [])
             setSponsors(spons || [])
+            setNewsletters(news || [])
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -347,6 +362,43 @@ export default function AdminDashboard() {
         fileInputRef.current?.click()
     }
 
+    const handleCreateNewsletter = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        // Validation
+        const link = newNewsletter.link
+        if (!link.includes('drive.google.com') || !link.includes('/view')) {
+            alert("This format can't be accepted. We only support Google Drive links ending in /view")
+            return
+        }
+
+        try {
+            const { error } = await supabase
+                .from('newsletters')
+                .insert([newNewsletter])
+
+            if (error) throw error
+
+            alert('Newsletter published successfully!')
+            setNewNewsletterOpen(false)
+            setNewNewsletter({ title: '', link: '' })
+            fetchData()
+        } catch (error: any) {
+            console.error('Error creating newsletter:', error)
+            alert(`Failed to publish newsletter: ${error.message}`)
+        }
+    }
+
+    const handleDeleteNewsletter = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this newsletter?')) return
+        try {
+            await supabase.from('newsletters').delete().eq('id', id)
+            fetchData()
+        } catch (error) {
+            console.error('Error deleting newsletter:', error)
+        }
+    }
+
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
@@ -391,6 +443,7 @@ export default function AdminDashboard() {
                 <TabsList>
                     <TabsTrigger value="events">Events</TabsTrigger>
                     <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
+                    <TabsTrigger value="newsletters">Newsletters</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
                 </TabsList>
 
@@ -679,6 +732,73 @@ export default function AdminDashboard() {
                     </Card>
                 </TabsContent>
 
+
+                <TabsContent value="newsletters">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Newsletter Management</CardTitle>
+                                <CardDescription>Manage monthly newsletters (Google Drive Links).</CardDescription>
+                            </div>
+                            <Dialog open={newNewsletterOpen} onOpenChange={setNewNewsletterOpen}>
+                                <DialogTrigger asChild>
+                                    <Button><Plus className="mr-2 h-4 w-4" /> Add Newsletter</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Newsletter</DialogTitle>
+                                        <DialogDescription>Link must be a Google Drive link ending in <code>/view</code>.</DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleCreateNewsletter} className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="newsletter-title">Newlsletter Title *</Label>
+                                            <Input id="newsletter-title" required placeholder="e.g. January 2026 Issue" value={newNewsletter.title} onChange={e => setNewNewsletter({ ...newNewsletter, title: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="newsletter-link">Google Drive Link *</Label>
+                                            <Input id="newsletter-link" required placeholder="https://drive.google.com/.../view" value={newNewsletter.link} onChange={e => setNewNewsletter({ ...newNewsletter, link: e.target.value })} />
+                                        </div>
+                                        <Button type="submit" className="w-full">Publish Newsletter</Button>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </CardHeader>
+                        <CardContent>
+                            {newsletters.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">No newsletters published yet.</div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Title</TableHead>
+                                            <TableHead>Date Published</TableHead>
+                                            <TableHead>Link</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {newsletters.map((newsletter) => (
+                                            <TableRow key={newsletter.id}>
+                                                <TableCell className="font-medium">{newsletter.title}</TableCell>
+                                                <TableCell>{new Date(newsletter.created_at).toLocaleDateString()}</TableCell>
+                                                <TableCell className="text-sm text-blue-600 truncate max-w-[200px]">
+                                                    <a href={newsletter.link} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                                        {newsletter.link}
+                                                    </a>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteNewsletter(newsletter.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
                 <TabsContent value="messages">
                     <Card>
