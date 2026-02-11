@@ -2,28 +2,12 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Mail, Linkedin, Users, Heart, Calendar, Award } from 'lucide-react'
+import { Mail, Linkedin, Users, Heart, Award } from 'lucide-react'
 import Image from 'next/image'
 import { FadeIn } from '@/components/ui/fade-in'
 import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
 
-const stats = [
-  {
-    icon: Calendar,
-    value: '50+',
-    label: 'Annual Events',
-  },
-  {
-    icon: Heart,
-    value: '15+',
-    label: 'Years of Service',
-  },
-  {
-    icon: Award,
-    value: '100+',
-    label: 'Community Partners',
-  },
-]
+
 
 export default function AboutPage() {
   return (
@@ -52,21 +36,7 @@ export default function AboutPage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-12 bg-background border-b">
-          <div className="container mx-auto px-4">
-            <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              {stats.map((stat, index) => (
-                <StaggerItem key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
-                    <stat.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="text-3xl md:text-4xl font-bold text-foreground mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
-          </div>
-        </section>
+
 
         {/* Our Story */}
         <section className="py-20 bg-background">
