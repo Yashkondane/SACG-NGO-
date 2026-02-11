@@ -21,8 +21,8 @@ export function WhatWeDoSection() {
         },
         {
             image: '/images/social-support.jpg',
-            title: 'Social Support',
-            description: 'Provide resources and assistance to community members in times of need'
+            title: 'Social Engagement',
+            description: 'Fostering a sense of belonging and community participation'
         }
     ]
 
