@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dialog'
 import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 import { GalleryManager } from '@/components/admin/gallery-manager'
+import { ContentManager } from '@/components/admin/content-manager'
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('events')
@@ -442,10 +443,15 @@ export default function AdminDashboard() {
             <Tabs defaultValue="events" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="events">Events</TabsTrigger>
+                    <TabsTrigger value="pages">Pages (Content)</TabsTrigger>
                     <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
                     <TabsTrigger value="newsletters">Newsletters</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="pages">
+                    <ContentManager />
+                </TabsContent>
 
                 {/* --- Events Tab --- */}
                 <TabsContent value="events">

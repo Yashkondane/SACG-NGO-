@@ -4,7 +4,12 @@ import Image from 'next/image'
 import { FadeIn } from '@/components/ui/fade-in'
 import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
 
-export function MissionSection() {
+interface MissionSectionProps {
+    missionContent?: any
+    goalContent?: any
+}
+
+export function MissionSection({ missionContent, goalContent }: MissionSectionProps) {
     return (
         <section className="py-24 bg-background overflow-hidden">
             <div className="container mx-auto px-4">
@@ -13,20 +18,17 @@ export function MissionSection() {
                     <div>
                         <div className="space-y-6">
                             <FadeIn direction="right">
-                                <h2 className="text-4xl md:text-5xl font-bold text-primary">Our Mission</h2>
+                                <h2 className="text-4xl md:text-5xl font-bold text-primary">{missionContent?.title || "Our Mission"}</h2>
                                 <div className="w-20 h-1 bg-accent mt-2"></div>
                             </FadeIn>
                             <FadeIn delay={0.2} direction="right">
                                 <p className="text-lg text-muted-foreground leading-relaxed">
-                                    To foster a strong, vibrant South Asian community in Greater New Haven by promoting cultural awareness,
-                                    social engagement, and mutual support.
+                                    {missionContent?.text_1 || "To foster a strong, vibrant South Asian community in Greater New Haven by promoting cultural awareness, social engagement, and mutual support."}
                                 </p>
                             </FadeIn>
                             <FadeIn delay={0.4} direction="right">
                                 <p className="text-lg text-muted-foreground leading-relaxed">
-                                    We strive to create meaningful connections that celebrate our rich heritage while embracing the diversity
-                                    of our region. Through community programs, cultural events, and social initiatives, we work to build
-                                    bridges between generations and cultures.
+                                    {missionContent?.text_2 || "We strive to create meaningful connections that celebrate our rich heritage while embracing the diversity of our region. Through community programs, cultural events, and social initiatives, we work to build bridges between generations and cultures."}
                                 </p>
                             </FadeIn>
                         </div>
@@ -35,7 +37,7 @@ export function MissionSection() {
                         <FadeIn direction="left" delay={0.3}>
                             <div className="absolute -bottom-4 -right-4 w-full h-full border-4 border-primary/20 rounded-lg -z-10"></div>
                             <Image
-                                src="/images/about-us.jpg"
+                                src={missionContent?.imageUrl || "/images/about-us.jpg"}
                                 alt="Community members in traditional attire celebrating culture"
                                 width={600}
                                 height={338}
@@ -61,7 +63,7 @@ export function MissionSection() {
                                 <div className="relative w-full max-w-sm aspect-square">
                                     <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
                                     <Image
-                                        src="/images/logo.jpg"
+                                        src={goalContent?.imageUrl || "/images/logo.jpg"}
                                         alt="SACG Logo"
                                         fill
                                         className="object-contain drop-shadow-2xl relative z-10 rounded-full bg-white p-2 hover:scale-105 transition-transform duration-500"
@@ -74,39 +76,28 @@ export function MissionSection() {
                             <div className="lg:col-span-3">
                                 <div className="space-y-6">
                                     <div>
-                                        <h2 className="text-4xl md:text-5xl font-bold mb-3">Our Goal</h2>
+                                        <h2 className="text-4xl md:text-5xl font-bold mb-3">{goalContent?.title || "Our Goal"}</h2>
                                         <div className="w-24 h-1.5 bg-white/90 rounded-full"></div>
                                     </div>
 
                                     <p className="text-lg leading-relaxed opacity-95 text-balance">
-                                        To create a thriving, inclusive community where South Asian culture is celebrated, preserved, and shared
-                                        with future generations while fostering meaningful connections across all backgrounds.
+                                        {goalContent?.text_1 || "To create a thriving, inclusive community where South Asian culture is celebrated, preserved, and shared with future generations while fostering meaningful connections across all backgrounds."}
                                     </p>
 
                                     <p className="text-base leading-relaxed opacity-90 text-balance">
-                                        We aim to empower our members through cultural education, community service, and social engagement,
-                                        building a legacy of unity, understanding, and mutual respect that enriches the Greater New Haven area
-                                        for years to come.
+                                        {goalContent?.text_2 || "We aim to empower our members through cultural education, community service, and social engagement, building a legacy of unity, understanding, and mutual respect that enriches the Greater New Haven area for years to come."}
                                     </p>
 
-                                    <StaggerContainer className="grid sm:grid-cols-2 gap-3 pt-2" delay={0.4}>
-                                        <StaggerItem className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm hover:bg-white/20 transition-colors">
-                                            <span className="text-white/90 mt-0.5 text-lg">✓</span>
-                                            <span className="text-sm leading-snug">Strengthen cultural identity and heritage preservation</span>
-                                        </StaggerItem>
-                                        <StaggerItem className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm hover:bg-white/20 transition-colors">
-                                            <span className="text-white/90 mt-0.5 text-lg">✓</span>
-                                            <span className="text-sm leading-snug">Foster cross-generational and cross-cultural connections</span>
-                                        </StaggerItem>
-                                        <StaggerItem className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm hover:bg-white/20 transition-colors">
-                                            <span className="text-white/90 mt-0.5 text-lg">✓</span>
-                                            <span className="text-sm leading-snug">Support community members through resources and programs</span>
-                                        </StaggerItem>
-                                        <StaggerItem className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm hover:bg-white/20 transition-colors">
-                                            <span className="text-white/90 mt-0.5 text-lg">✓</span>
-                                            <span className="text-sm leading-snug">Promote civic engagement and social responsibility</span>
-                                        </StaggerItem>
-                                    </StaggerContainer>
+                                    {goalContent?.points && (
+                                        <StaggerContainer className="grid sm:grid-cols-2 gap-3 pt-2" delay={0.4}>
+                                            {goalContent.points.map((point: string, idx: number) => (
+                                                <StaggerItem key={idx} className="flex items-start gap-3 bg-white/10 rounded-lg p-3 backdrop-blur-sm hover:bg-white/20 transition-colors">
+                                                    <span className="text-white/90 mt-0.5 text-lg">✓</span>
+                                                    <span className="text-sm leading-snug">{point}</span>
+                                                </StaggerItem>
+                                            ))}
+                                        </StaggerContainer>
+                                    )}
                                 </div>
                             </div>
                         </div>

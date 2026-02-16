@@ -5,10 +5,14 @@ import { InteractiveCard } from '@/components/interactive-card'
 import { FadeIn } from '@/components/ui/fade-in'
 import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
 
-export function WhatWeDoSection() {
+interface WhatWeDoSectionProps {
+    content?: any
+}
+
+export function WhatWeDoSection({ content }: WhatWeDoSectionProps) {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
-    const whatWeDoItems = [
+    const whatWeDoItems = content?.items || [
         {
             image: '/images/cultural-events.jpg',
             title: 'Cultural Events',
@@ -30,10 +34,12 @@ export function WhatWeDoSection() {
         <section className="py-20 bg-muted/50">
             <div className="container mx-auto px-4">
                 <FadeIn direction="up">
-                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-balance">What We Do</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-balance">
+                        {content?.title || "What We Do"}
+                    </h2>
                 </FadeIn>
                 <StaggerContainer className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {whatWeDoItems.map((item, index) => (
+                    {whatWeDoItems.map((item: any, index: number) => (
                         <StaggerItem key={index}>
                             <InteractiveCard
                                 image={item.image}

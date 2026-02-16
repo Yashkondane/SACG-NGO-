@@ -6,10 +6,15 @@ import { Mail, Linkedin, Users, Heart, Award } from 'lucide-react'
 import Image from 'next/image'
 import { FadeIn } from '@/components/ui/fade-in'
 import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
+import { getPageContent } from '@/lib/content'
 
+export const revalidate = 60 // Revalidate every 60 seconds
 
+export default async function AboutPage() {
+  const content = await getPageContent('about')
+  const intro = content?.intro
+  const story = content?.story
 
-export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -21,31 +26,28 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <FadeIn direction="up">
-                <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">Our Journey</Badge>
+                <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">{intro?.badge || "Our Journey"}</Badge>
               </FadeIn>
               <FadeIn delay={0.2} direction="up">
-                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">About SACG</h1>
+                <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance">{intro?.title || "About SACG"}</h1>
               </FadeIn>
               <FadeIn delay={0.4} direction="up">
                 <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
-                  Celebrating South Asian culture, fostering community connections, and building lasting memories in Greater New Haven since 2010.
+                  {intro?.description || "Celebrating South Asian culture, fostering community connections, and building lasting memories in Greater New Haven since 2010."}
                 </p>
               </FadeIn>
             </div>
           </div>
         </section>
 
-        {/* Stats Section */}
-
-
         {/* Our Story */}
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4 max-w-6xl">
             <FadeIn direction="up">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-5xl font-bold mb-4 text-balance">Our Story</h2>
+                <h2 className="text-3xl md:text-5xl font-bold mb-4 text-balance">{story?.title || "Our Story"}</h2>
                 <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                  From humble beginnings to a thriving community
+                  {story?.subtitle || "From humble beginnings to a thriving community"}
                 </p>
               </div>
             </FadeIn>
@@ -55,13 +57,13 @@ export default function AboutPage() {
                 <FadeIn delay={0.2} direction="right">
                   <div className="space-y-4">
                     <p className="text-muted-foreground leading-relaxed text-lg">
-                      The South Asian Community of Greater New Haven (SACG) was born from a simple yet powerful idea: to create a space where South Asians could come together, celebrate their heritage, and support one another in navigating life in a new country.
+                      {story?.text_1 || "The South Asian Community of Greater New Haven (SACG) was born from a simple yet powerful idea: to create a space where South Asians could come together, celebrate their heritage, and support one another in navigating life in a new country."}
                     </p>
                     <p className="text-muted-foreground leading-relaxed text-lg">
-                      What started as informal gatherings quickly grew into something much bigger—a movement focused on preserving cultural identity, bridging the gap between traditions, and building a sense of belonging in a broader community. The seed of this effort was sowed one fall evening, when the founders met over chai (of course!), and that set the stage for what has blossomed and continues to grow: our SACG!
+                      {story?.text_2 || "What started as informal gatherings quickly grew into something much bigger—a movement focused on preserving cultural identity, bridging the gap between traditions, and building a sense of belonging in a broader community. The seed of this effort was sowed one fall evening, when the founders met over chai (of course!), and that set the stage for what has blossomed and continues to grow: our SACG!"}
                     </p>
                     <p className="text-muted-foreground leading-relaxed text-lg">
-                      With several successful and multi-faceted events under our belt, we formally registered as a 501(c)3 in July 2025. We are committed to building a welcoming home for the South Asian community of Greater New Haven—one rooted in culture, connection, and care.
+                      {story?.text_3 || "With several successful and multi-faceted events under our belt, we formally registered as a 501(c)3 in July 2025. We are committed to building a welcoming home for the South Asian community of Greater New Haven—one rooted in culture, connection, and care."}
                     </p>
                   </div>
                 </FadeIn>
@@ -72,7 +74,7 @@ export default function AboutPage() {
                 <FadeIn delay={0.4} direction="left">
                   <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-black/5">
                     <Image
-                      src="/images/about-team.jpg"
+                      src={story?.imageUrl || "/images/about-team.jpg"}
                       alt="SACG community members in traditional attire"
                       fill
                       loading="lazy"
@@ -86,8 +88,6 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-
-
 
         {/* Values */}
         <section className="py-20 bg-background">
