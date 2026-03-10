@@ -19,9 +19,7 @@ export function HomeUpcomingEvents() {
                     .from('events')
                     .select('*')
                     .gte('date', new Date().toISOString())
-                    .neq('category', 'health')
                     .order('date', { ascending: true })
-                    .limit(3)
 
                 if (error) throw error
                 setEvents(data || [])
