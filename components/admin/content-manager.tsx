@@ -29,6 +29,22 @@ const PAGES = [
             { key: 'intro', name: 'Introduction' },
             { key: 'story', name: 'Our Story' },
         ]
+    },
+    {
+        slug: 'sponsors',
+        name: 'Sponsors Page',
+        sections: [
+            { key: 'header', name: 'Header Section' },
+            { key: 'thank_you', name: 'Thank You Message' },
+            { key: 'cta', name: 'Partner With Us CTA' },
+        ]
+    },
+    {
+        slug: 'newsletter',
+        name: 'Newsletter Page',
+        sections: [
+            { key: 'header', name: 'Header Section' }
+        ]
     }
 ]
 

@@ -5,35 +5,37 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, HandHeart, Loader2 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { ExternalLink, HandHeart } from 'lucide-react'
 import { FadeIn } from '@/components/ui/fade-in'
 import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
 import { Button } from '@/components/ui/button'
+import { getPageContent } from '@/lib/content'
+import { supabase } from '@/lib/supabase'
 
-export default function SponsorsPage() {
-  const [sponsors, setSponsors] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+export const revalidate = 60 // Revalidate every 60 seconds
 
-  useEffect(() => {
-    const fetchSponsors = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('sponsors')
-          .select('*')
-          .order('created_at', { ascending: true }) // Fallback to created_at or display_order if valid
+export default async function SponsorsPage() {
+  const content = await getPageContent('sponsors')
+  const header = content?.header
+  const thankYou = content?.thank_you
+  const cta = content?.cta
 
-        if (error) throw error
-        setSponsors(data || [])
-      } catch (error) {
-        console.error('Error fetching sponsors:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  // Fetch sponsors on the server side to match the transition to an async component
+  let sponsors: any[] = []
+  try {
+    const { data, error } = await supabase
+      .from('sponsors')
+      .select('*')
+      .order('created_at', { ascending: true })
+    if (error) throw error
+    sponsors = data || []
+  } catch (error) {
+    console.error('Error fetching sponsors:', error)
+  }
 
-    fetchSponsors()
-  }, [])
+  // We no longer need the loading state since we fetch on the server
+  const loading = false
+
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -48,14 +50,14 @@ export default function SponsorsPage() {
 
           <div className="container mx-auto px-4 relative z-10 text-center">
             <FadeIn direction="up">
-              <Badge variant="secondary" className="mb-4 text-sm px-4 py-1 tracking-wide font-medium">Community Partners</Badge>
+              <Badge variant="secondary" className="mb-4 text-sm px-4 py-1 tracking-wide font-medium">{header?.badge || "Community Partners"}</Badge>
             </FadeIn>
             <FadeIn delay={0.2} direction="up">
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance drop-shadow-md">Our Sponsors</h1>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-balance drop-shadow-md">{header?.title || "Our Sponsors"}</h1>
             </FadeIn>
             <FadeIn delay={0.4} direction="up">
               <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed max-w-3xl mx-auto drop-shadow-sm">
-                We are deeper grateful for the vision and generosity of these organizations. Their support empowers us to serve and uplift the South Asian community.
+                {header?.description || "We are deeper grateful for the vision and generosity of these organizations. Their support empowers us to serve and uplift the South Asian community."}
               </p>
             </FadeIn>
           </div>
@@ -73,9 +75,9 @@ export default function SponsorsPage() {
                     <HandHeart className="h-8 w-8 text-primary" />
                   </div>
                   <div className="space-y-4">
-                    <h3 className="text-2xl font-bold text-slate-900">Thank You to Our Partners</h3>
+                    <h3 className="text-2xl font-bold text-slate-900">{thankYou?.title || "Thank You to Our Partners"}</h3>
                     <p className="text-slate-600 leading-relaxed text-lg">
-                      Our partners are the backbone of our community efforts. Through their generous contributions, we are able to curate enriching cultural events, advocate for community well-being, and build a stronger, more connected South Asian diaspora. We proudly recognize their commitment and encourage you to engage with the businesses and organizations that make our mission possible.
+                      {thankYou?.description || "Our partners are the backbone of our community efforts. Through their generous contributions, we are able to curate enriching cultural events, advocate for community well-being, and build a stronger, more connected South Asian diaspora. We proudly recognize their commitment and encourage you to engage with the businesses and organizations that make our mission possible."}
                     </p>
                   </div>
                 </div>
@@ -89,7 +91,7 @@ export default function SponsorsPage() {
           <div className="container mx-auto px-4">
             {loading ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <div className="h-10 w-10 animate-spin border-4 border-primary border-t-transparent rounded-full" />
               </div>
             ) : sponsors.length === 0 ? (
               <div className="text-center py-20 text-muted-foreground">
@@ -156,9 +158,9 @@ export default function SponsorsPage() {
           <section className="py-24 bg-primary relative overflow-hidden">
             <div className="absolute inset-0 bg-white/5 opacity-10 pattern-dots"></div>
             <div className="container mx-auto px-4 relative z-10 text-center">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">Partner With Us</h2>
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">{cta?.title || "Partner With Us"}</h2>
               <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                Join our mission to celebrate culture and community in Greater New Haven.
+                {cta?.description || "Join our mission to celebrate culture and community in Greater New Haven."}
               </p>
               <Button
                 size="lg"

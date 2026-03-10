@@ -5,34 +5,34 @@ import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ExternalLink, FileText, Loader2, Calendar } from 'lucide-react'
+import { ExternalLink, FileText, Calendar } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { FadeIn } from '@/components/ui/fade-in'
 import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container'
+import { getPageContent } from '@/lib/content'
 
-export default function NewsletterPage() {
-  const [newsletters, setNewsletters] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+export const revalidate = 60 // Revalidate every 60 seconds
 
-  useEffect(() => {
-    const fetchNewsletters = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('newsletters')
-          .select('*')
-          .order('created_at', { ascending: false })
+export default async function NewsletterPage() {
+  const content = await getPageContent('newsletter')
+  const header = content?.header
 
-        if (error) throw error
-        setNewsletters(data || [])
-      } catch (error) {
-        console.error('Error fetching newsletters:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+  // Fetch newsletters on the server side
+  let newsletters: any[] = []
+  try {
+    const { data, error } = await supabase
+      .from('newsletters')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    newsletters = data || []
+  } catch (error) {
+    console.error('Error fetching newsletters:', error)
+  }
 
-    fetchNewsletters()
-  }, [])
+  const loading = false
+
+
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -44,14 +44,14 @@ export default function NewsletterPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80 opacity-90" />
           <div className="container mx-auto px-4 relative z-10 text-center">
             <FadeIn direction="up">
-              <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">Community Updates</Badge>
+              <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">{header?.badge || "Community Updates"}</Badge>
             </FadeIn>
             <FadeIn delay={0.2} direction="up">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">SACG Newsletters</h1>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">{header?.title || "SACG Newsletters"}</h1>
             </FadeIn>
             <FadeIn delay={0.4} direction="up">
               <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto leading-relaxed">
-                Stay connected with our community through our monthly newsletters matching events, updates, and stories.
+                {header?.description || "Stay connected with our community through our monthly newsletters matching events, updates, and stories."}
               </p>
             </FadeIn>
           </div>
@@ -62,7 +62,7 @@ export default function NewsletterPage() {
           <div className="container mx-auto px-4">
             {loading ? (
               <div className="flex justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <div className="h-10 w-10 animate-spin border-4 border-primary border-t-transparent rounded-full" />
               </div>
             ) : newsletters.length === 0 ? (
               <FadeIn direction="up">
