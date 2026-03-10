@@ -18,7 +18,6 @@ export default function PastEventsPage() {
                     .from('events')
                     .select('*')
                     .lt('date', new Date().toISOString())
-                    .neq('category', 'health')
                     .order('date', { ascending: false })
 
                 if (error) throw error

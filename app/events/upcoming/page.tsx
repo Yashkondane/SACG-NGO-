@@ -18,7 +18,6 @@ export default function UpcomingEventsPage() {
                     .from('events')
                     .select('*')
                     .gte('date', new Date().toISOString())
-                    .neq('category', 'health')
                     .order('date', { ascending: true })
 
                 if (error) throw error
