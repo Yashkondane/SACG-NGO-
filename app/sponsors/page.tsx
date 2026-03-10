@@ -1,6 +1,4 @@
-'use client'
 
-import { useEffect, useState } from 'react'
 import { Navigation } from '@/components/navigation'
 import { Footer } from '@/components/footer'
 import { Card, CardContent } from '@/components/ui/card'

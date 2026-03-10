@@ -121,12 +121,16 @@ export default function EventDetailPage() {
                     {/* Main Content (Left) */}
                     <div className="lg:col-span-2 space-y-8">
                         <div className="prose prose-lg dark:prose-invert max-w-none">
-                            <p className="lead text-2xl text-muted-foreground font-medium border-l-4 border-primary pl-4">
-                                {event.excerpt}
-                            </p>
-                            <div className="mt-8 whitespace-pre-wrap text-lg leading-relaxed text-foreground/90">
-                                {event.content}
-                            </div>
+                            {event.excerpt && (
+                                <p className="lead text-2xl text-muted-foreground font-medium border-l-4 border-primary pl-4">
+                                    {event.excerpt}
+                                </p>
+                            )}
+                            {event.content && (
+                                <div className="mt-8 whitespace-pre-wrap text-lg leading-relaxed text-foreground/90">
+                                    {event.content}
+                                </div>
+                            )}
                         </div>
 
                         {/* Event Gallery Section */}
@@ -152,22 +156,27 @@ export default function EventDetailPage() {
                                     <div>
                                         <p className="font-medium">Date</p>
                                         <p className="text-muted-foreground">
-                                            {dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/New_York' })}
+                                            {event.is_tbd
+                                                ? 'TBD'
+                                                : dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/New_York' })
+                                            }
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-3">
-                                    <div className="p-2 bg-primary/10 rounded-lg">
-                                        <Clock className="w-5 h-5 text-primary" />
+                                {!event.is_tbd && (
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-primary/10 rounded-lg">
+                                            <Clock className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium">Time</p>
+                                            <p className="text-muted-foreground">
+                                                {dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' })}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-medium">Time</p>
-                                        <p className="text-muted-foreground">
-                                            {dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', timeZoneName: 'short' })}
-                                        </p>
-                                    </div>
-                                </div>
+                                )}
 
                                 <div className="flex items-start gap-3">
                                     <div className="p-2 bg-primary/10 rounded-lg">

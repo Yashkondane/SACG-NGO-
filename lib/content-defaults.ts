@@ -95,5 +95,27 @@ export const DEFAULT_PAGE_CONTENT: Record<string, Record<string, any>> = {
             "text_3": "With several successful and multi-faceted events under our belt, we formally registered as a 501(c)3 in July 2025. We are committed to building a welcoming home for the South Asian community of Greater New Haven.",
             "imageUrl": "/images/about-team.jpg"
         }
+    },
+    sponsors: {
+        header: {
+            "badge": "Community Partners",
+            "title": "Our Sponsors",
+            "description": "We are deeper grateful for the vision and generosity of these organizations. Their support empowers us to serve and uplift the South Asian community."
+        },
+        thank_you: {
+            "title": "Thank You to Our Partners",
+            "description": "Our partners are the backbone of our community efforts. Through their generous contributions, we are able to curate enriching cultural events, advocate for community well-being, and build a stronger, more connected South Asian diaspora. We proudly recognize their commitment and encourage you to engage with the businesses and organizations that make our mission possible."
+        },
+        cta: {
+            "title": "Partner With Us",
+            "description": "Join our mission to celebrate culture and community in Greater New Haven."
+        }
+    },
+    newsletter: {
+        header: {
+            "badge": "Community Updates",
+            "title": "SACG Newsletters",
+            "description": "Stay connected with our community through our monthly newsletters matching events, updates, and stories."
+        }
     }
 }

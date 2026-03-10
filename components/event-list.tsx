@@ -14,6 +14,7 @@ interface Event {
     excerpt: string
     image_url?: string
     category: string
+    is_tbd?: boolean
 }
 
 interface EventListProps {
@@ -58,7 +59,7 @@ export function EventList({ events, emptyMessage = "No events found." }: EventLi
                             <CardDescription className="flex flex-col gap-1 mt-2">
                                 <span className="flex items-center gap-2 text-sm">
                                     <Calendar className="h-4 w-4" />
-                                    {new Date(event.date).toLocaleDateString()} at {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {event.is_tbd ? 'TBD' : `${new Date(event.date).toLocaleDateString()} at ${new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                                 </span>
                                 <span className="flex items-center gap-2 text-sm">
                                     <MapPin className="h-4 w-4" />
@@ -66,11 +67,13 @@ export function EventList({ events, emptyMessage = "No events found." }: EventLi
                                 </span>
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-1">
-                            <p className="text-sm text-muted-foreground line-clamp-3">
-                                {event.excerpt}
-                            </p>
-                        </CardContent>
+                        {event.excerpt && (
+                            <CardContent className="flex-1">
+                                <p className="text-sm text-muted-foreground line-clamp-3">
+                                    {event.excerpt}
+                                </p>
+                            </CardContent>
+                        )}
                     </Card>
                 </Link>
             ))}

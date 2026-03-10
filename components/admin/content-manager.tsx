@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { SectionEditor } from './section-editor'
 import { Loader2 } from 'lucide-react'
+import { DEFAULT_PAGE_CONTENT } from '@/lib/content-defaults'
 
 const PAGES = [
     {
@@ -92,7 +93,8 @@ export function ContentManager() {
                 console.error('Error fetching content:', error)
             }
 
-            setContent(data?.content || {})
+            const defaultContent = DEFAULT_PAGE_CONTENT[pageSlug]?.[sectionKey] || {}
+            setContent(data?.content && Object.keys(data.content).length > 0 ? data.content : defaultContent)
         } catch (err) {
             console.error(err)
         } finally {

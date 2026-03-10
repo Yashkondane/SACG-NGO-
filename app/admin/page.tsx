@@ -55,7 +55,8 @@ export default function AdminDashboard() {
         excerpt: '',
         content: '',
         category: 'general',
-        image_url: ''
+        image_url: '',
+        is_tbd: false
     })
 
     // Sponsor Form State
@@ -243,15 +244,21 @@ export default function AdminDashboard() {
 
             // Now we have "2024-10-10T11:00:00-04:00" for example.
 
+            // Check if TBD is true. If so, override finalIso with a far-future date.
+            const dateToSave = newEvent.is_tbd ? '2099-12-31T23:59:00-05:00' : finalIso;
+
             const { error } = await supabase
                 .from('events')
-                .insert([{ ...newEvent, date: finalIso }])
+                .insert([{
+                    ...newEvent,
+                    date: dateToSave
+                }])
 
             if (error) throw error
 
             alert('Event created successfully!')
             setNewEventOpen(false)
-            setNewEvent({ title: '', date: '', location: '', excerpt: '', content: '', category: 'general', image_url: '' })
+            setNewEvent({ title: '', date: '', location: '', excerpt: '', content: '', category: 'general', image_url: '', is_tbd: false })
             fetchData()
         } catch (error: any) {
             console.error('Error creating event:', error)
@@ -298,16 +305,20 @@ export default function AdminDashboard() {
             const offset = getOffset(new Date(editingEvent.date));
             const finalIso = `${editingEvent.date}:00${offset}`;
 
+            // Check if TBD is true. If so, override finalIso with a far-future date.
+            const dateToSave = editingEvent.is_tbd ? '2099-12-31T23:59:00-05:00' : finalIso;
+
             const { error } = await supabase
                 .from('events')
                 .update({
                     title: editingEvent.title,
-                    date: finalIso,
+                    date: dateToSave,
                     location: editingEvent.location,
                     excerpt: editingEvent.excerpt,
                     content: editingEvent.content,
                     category: editingEvent.category,
-                    image_url: editingEvent.image_url
+                    image_url: editingEvent.image_url,
+                    is_tbd: editingEvent.is_tbd
                 })
                 .eq('id', editingEvent.id)
 
@@ -488,9 +499,21 @@ export default function AdminDashboard() {
                                             </select>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="date">Date & Time *</Label>
-                                                <Input id="date" type="datetime-local" required value={newEvent.date} onChange={e => setNewEvent({ ...newEvent, date: e.target.value })} />
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="date">Date & Time {newEvent.is_tbd ? '' : '*'}</Label>
+                                                    <Input id="date" type="datetime-local" required={!newEvent.is_tbd} disabled={newEvent.is_tbd} value={newEvent.date} onChange={e => setNewEvent({ ...newEvent, date: e.target.value })} />
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="is_tbd"
+                                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                        checked={newEvent.is_tbd}
+                                                        onChange={(e) => setNewEvent({ ...newEvent, is_tbd: e.target.checked })}
+                                                    />
+                                                    <Label htmlFor="is_tbd" className="font-normal cursor-pointer">Date is TBD (To Be Determined)</Label>
+                                                </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="location">Location *</Label>
@@ -510,12 +533,12 @@ export default function AdminDashboard() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="excerpt">Short Description (Excerpt) *</Label>
-                                            <Textarea id="excerpt" required placeholder="Brief summary for the event card..." value={newEvent.excerpt} onChange={e => setNewEvent({ ...newEvent, excerpt: e.target.value })} />
+                                            <Label htmlFor="excerpt">Short Description (Excerpt) (Optional)</Label>
+                                            <Textarea id="excerpt" placeholder="Brief summary for the event card..." value={newEvent.excerpt} onChange={e => setNewEvent({ ...newEvent, excerpt: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="content">Full Details *</Label>
-                                            <Textarea id="content" required placeholder="Full event details..." className="h-32" value={newEvent.content} onChange={e => setNewEvent({ ...newEvent, content: e.target.value })} />
+                                            <Label htmlFor="content">Full Details (Optional)</Label>
+                                            <Textarea id="content" placeholder="Full event details..." className="h-32" value={newEvent.content} onChange={e => setNewEvent({ ...newEvent, content: e.target.value })} />
                                         </div>
                                         <Button type="submit" className="w-full" disabled={uploading}>Create Event</Button>
                                         <p className="text-xs text-muted-foreground text-center mt-2">
@@ -556,15 +579,28 @@ export default function AdminDashboard() {
                                                 </select>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="edit-date">Date & Time *</Label>
-                                                    <Input
-                                                        id="edit-date"
-                                                        type="datetime-local"
-                                                        required
-                                                        value={editingEvent.date}
-                                                        onChange={e => setEditingEvent({ ...editingEvent, date: e.target.value })}
-                                                    />
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="edit-date">Date & Time {editingEvent.is_tbd ? '' : '*'}</Label>
+                                                        <Input
+                                                            id="edit-date"
+                                                            type="datetime-local"
+                                                            required={!editingEvent.is_tbd}
+                                                            disabled={editingEvent.is_tbd}
+                                                            value={editingEvent.is_tbd ? '' : editingEvent.date}
+                                                            onChange={e => setEditingEvent({ ...editingEvent, date: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="edit_is_tbd"
+                                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                            checked={editingEvent.is_tbd}
+                                                            onChange={(e) => setEditingEvent({ ...editingEvent, is_tbd: e.target.checked })}
+                                                        />
+                                                        <Label htmlFor="edit_is_tbd" className="font-normal cursor-pointer">Date is TBD (To Be Determined)</Label>
+                                                    </div>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label htmlFor="edit-location">Location *</Label>
@@ -597,20 +633,18 @@ export default function AdminDashboard() {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label htmlFor="edit-excerpt">Short Description (Excerpt) *</Label>
+                                                <Label htmlFor="edit-excerpt">Short Description (Excerpt) (Optional)</Label>
                                                 <Textarea
                                                     id="edit-excerpt"
-                                                    required
                                                     placeholder="Brief summary for the event card..."
                                                     value={editingEvent.excerpt}
                                                     onChange={e => setEditingEvent({ ...editingEvent, excerpt: e.target.value })}
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="edit-content">Full Details *</Label>
+                                                <Label htmlFor="edit-content">Full Details (Optional)</Label>
                                                 <Textarea
                                                     id="edit-content"
-                                                    required
                                                     placeholder="Full event details..."
                                                     className="h-32"
                                                     value={editingEvent.content}
@@ -640,7 +674,7 @@ export default function AdminDashboard() {
                                         {events.map((event) => (
                                             <TableRow key={event.id}>
                                                 <TableCell className="font-medium">{event.title}</TableCell>
-                                                <TableCell>{new Date(event.date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}</TableCell>
+                                                <TableCell>{event.is_tbd ? 'TBD' : new Date(event.date).toLocaleDateString('en-US', { timeZone: 'America/New_York' })}</TableCell>
                                                 <TableCell>{event.location}</TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-2">
@@ -720,7 +754,11 @@ export default function AdminDashboard() {
                                         {sponsors.map((sponsor) => (
                                             <TableRow key={sponsor.id}>
                                                 <TableCell>
-                                                    <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 w-10 object-contain rounded" />
+                                                    {sponsor.logo_url ? (
+                                                        <img src={sponsor.logo_url} alt={sponsor.name} className="h-10 w-10 object-contain rounded" />
+                                                    ) : (
+                                                        <div className="h-10 w-10 bg-muted rounded flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight p-1">No Logo</div>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="font-medium">{sponsor.name}</TableCell>
                                                 <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">{sponsor.website_url}</TableCell>
