@@ -4,7 +4,6 @@ import { HeroSection } from '@/components/home/hero-section'
 import { MissionSection } from '@/components/home/mission-section'
 import { WhatWeDoSection } from '@/components/home/what-we-do-section'
 import { HomeUpcomingEvents } from '@/components/home-upcoming-events'
-import { TestimonialsSection } from '@/components/home/testimonials-section'
 import { FAQSection } from '@/components/home/faq-section'
 import { JoinCommunitySection } from '@/components/home/join-community-section'
 import { getPageContent } from '@/lib/content'
@@ -22,7 +21,6 @@ export default async function Home() {
         <MissionSection missionContent={content?.mission} goalContent={content?.goal} />
         <WhatWeDoSection content={content?.what_we_do} />
         <HomeUpcomingEvents />
-        <TestimonialsSection content={content?.testimonials} />
         <FAQSection content={content?.faq} />
         <JoinCommunitySection content={content?.join_community} />
       </main>

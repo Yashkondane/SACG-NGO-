@@ -18,7 +18,6 @@ const PAGES = [
             { key: 'mission', name: 'Our Mission' },
             { key: 'goal', name: 'Our Goal' },
             { key: 'what_we_do', name: 'What We Do' },
-            { key: 'testimonials', name: 'What Our Members Say' },
             { key: 'faq', name: 'FAQ' },
             { key: 'join_community', name: 'Join Community Section' },
         ]
