@@ -30,6 +30,7 @@ import {
 import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 import { GalleryManager } from '@/components/admin/gallery-manager'
 import { ContentManager } from '@/components/admin/content-manager'
+import { DynamicQrManager } from '@/components/admin/dynamic-qr-manager'
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('events')
@@ -457,11 +458,16 @@ export default function AdminDashboard() {
                     <TabsTrigger value="pages">Pages (Content)</TabsTrigger>
                     <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
                     <TabsTrigger value="newsletters">Newsletters</TabsTrigger>
+                    <TabsTrigger value="qrcode">Dynamic QRs</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="pages">
                     <ContentManager />
+                </TabsContent>
+
+                <TabsContent value="qrcode">
+                    <DynamicQrManager />
                 </TabsContent>
 
                 {/* --- Events Tab --- */}
