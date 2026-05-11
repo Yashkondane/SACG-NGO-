@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
+import jsPDF from 'jspdf'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -152,28 +153,58 @@ export function DynamicQrManager() {
     setDownloadOpen(true)
   }
 
-  const downloadQrCode = () => {
+  const downloadSVG = () => {
     if (!qrRef.current || !selectedQr) return;
-    
-    // Convert SVG to data URL and download
+
+    const clone = qrRef.current.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    const origSize = qrRef.current.getAttribute('width') || '200';
+    clone.setAttribute('viewBox', `0 0 ${origSize} ${origSize}`);
+    clone.setAttribute('width', '800');
+    clone.setAttribute('height', '800');
+
+    const svgData = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `SACG_QR_${selectedQr.title.replace(/\s+/g, '_')}.svg`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadPDF = () => {
+    if (!qrRef.current || !selectedQr) return;
+
     const svgData = new XMLSerializer().serializeToString(qrRef.current);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
     const img = new Image();
-    
+
     img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      const pngFile = canvas.toDataURL("image/png");
-      
-      const downloadLink = document.createElement("a");
-      downloadLink.download = `SACG_QR_${selectedQr.title.replace(/\s+/g, '_')}.png`;
-      downloadLink.href = `${pngFile}`;
-      downloadLink.click();
+      const canvas = document.createElement('canvas');
+      const px = 800;
+      canvas.width = px;
+      canvas.height = px;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, px, px);
+      ctx.drawImage(img, 0, 0, px, px);
+
+      const imgData = canvas.toDataURL('image/png');
+
+      // A4: 210 × 297 mm — QR only, perfectly centered
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = 210;
+      const pageH = 297;
+      const qrMM = 150;
+      const x = (pageW - qrMM) / 2;
+      const y = (pageH - qrMM) / 2;
+
+      pdf.addImage(imgData, 'PNG', x, y, qrMM, qrMM);
+      pdf.save(`SACG_QR_${selectedQr.title.replace(/\s+/g, '_')}.pdf`);
     };
-    
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   }
 
   if (loading) {
@@ -308,9 +339,14 @@ export function DynamicQrManager() {
              )}
           </div>
           
-          <Button onClick={downloadQrCode} className="w-full">
-             <Download className="h-4 w-4 mr-2" /> Download PNG
-          </Button>
+          <div className="flex gap-2 w-full">
+            <Button onClick={downloadSVG} variant="outline" className="flex-1">
+              <Download className="h-4 w-4 mr-2" /> SVG
+            </Button>
+            <Button onClick={downloadPDF} className="flex-1">
+              <Download className="h-4 w-4 mr-2" /> PDF
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
