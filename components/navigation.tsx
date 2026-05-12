@@ -21,6 +21,8 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/about', label: 'About Us' },
   { href: '/events', label: 'Events' },
+  { href: '/discover', label: 'Discover Desi CT' },
+  { href: '/youth', label: 'SACG Youth' },
   { href: '/sponsors', label: 'Sponsors' },
   { href: '/newsletter', label: 'Newsletter' },
 ]
@@ -47,7 +49,7 @@ export function Navigation() {
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${(isScrolled || !isHomePage)
-        ? 'bg-white shadow-md border-b'
+        ? 'bg-primary shadow-md'
         : 'bg-transparent'
         }`}
     >
@@ -55,52 +57,69 @@ export function Navigation() {
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/images/logo.jpg"
+              src="/images/image.png"
               alt="SACG Logo"
               width={60}
               height={60}
               className="object-contain" // Removed rounded-full to show full logo, added object-contain
             />
-            <span className={`font-bold text-xl hidden md:inline transition-colors ${(isScrolled || !isHomePage) ? 'text-foreground' : 'text-white'
-              }`}>
+            <span className="font-bold text-xl hidden md:inline transition-colors text-white">
               SACG
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className={`text-sm font-medium transition-colors ${(isScrolled || !isHomePage) ? 'text-muted-foreground hover:text-primary' : 'text-white hover:text-primary'}`}>
+            <Link href="/" className="text-sm font-medium transition-colors text-white hover:text-white/80">
               Home
             </Link>
-            <Link href="/about" className={`text-sm font-medium transition-colors ${(isScrolled || !isHomePage) ? 'text-muted-foreground hover:text-primary' : 'text-white hover:text-primary'}`}>
+            <Link href="/about" className="text-sm font-medium transition-colors text-white hover:text-white/80">
               About Us
             </Link>
 
             {/* Events Dropdown */}
             <div className="relative group h-full flex items-center">
-              <button className={`flex items-center gap-1 text-sm font-medium transition-colors ${(isScrolled || !isHomePage) ? 'text-muted-foreground hover:text-primary' : 'text-white hover:text-primary'}`}>
+              <button className="flex items-center gap-1 text-sm font-medium transition-colors text-white hover:text-white/80">
                 Events
               </button>
               {/* Dropdown Menu with Padding Bridge */}
               <div className="absolute top-full left-0 pt-4 w-48 hidden group-hover:block">
                 <div className="bg-white rounded-md shadow-lg py-1 border">
-                  <Link href="/events/upcoming" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Upcoming </Link>
-                  <Link href="/events/past" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Past Events</Link>
-                  <Link href="/events/health" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Health Awareness</Link>
+                  <Link href="/events/upcoming" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">Upcoming </Link>
+                  <Link href="/events/past" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">Past Events</Link>
+                  <Link href="/events/health" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">Health Awareness</Link>
                 </div>
               </div>
             </div>
 
-            <Link href="/sponsors" className={`text-sm font-medium transition-colors ${(isScrolled || !isHomePage) ? 'text-muted-foreground hover:text-primary' : 'text-white hover:text-primary'}`}>
+            {/* Discover Desi CT Dropdown */}
+            <div className="relative group h-full flex items-center">
+              <button className="flex items-center gap-1 text-sm font-medium transition-colors text-white hover:text-white/80">
+                Discover Desi CT
+              </button>
+              {/* Dropdown Menu with Padding Bridge */}
+              <div className="absolute top-full left-0 pt-4 w-64 hidden group-hover:block">
+                <div className="bg-white rounded-md shadow-lg py-1 border">
+                  <Link href="/discover/non-profits" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">South Asian CT Non Profits</Link>
+                  <Link href="/discover/organizations" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">South Asian CT Organizations</Link>
+                </div>
+              </div>
+            </div>
+
+            <Link href="/youth" className="text-sm font-medium transition-colors text-white hover:text-white/80">
+              SACG Youth
+            </Link>
+
+            <Link href="/sponsors" className="text-sm font-medium transition-colors text-white hover:text-white/80">
               Sponsors
             </Link>
-            <Link href="/newsletter" className={`text-sm font-medium transition-colors ${(isScrolled || !isHomePage) ? 'text-muted-foreground hover:text-primary' : 'text-white hover:text-primary'}`}>
+            <Link href="/newsletter" className="text-sm font-medium transition-colors text-white hover:text-white/80">
               Newsletter
             </Link>
 
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="ml-2">Donate</Button>
+                <Button className="ml-2 bg-white text-primary hover:bg-white/90">Donate</Button>
               </DialogTrigger>
               <SupportDialogContent />
             </Dialog>
@@ -113,7 +132,7 @@ export function Navigation() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={(isScrolled || !isHomePage) ? '' : 'text-white hover:bg-white/20'}
+                  className="text-white hover:bg-white/20"
                 >
                   <Menu className="h-6 w-6" />
                   <span className="sr-only">Toggle menu</span>
@@ -133,12 +152,22 @@ export function Navigation() {
                     </div>
                   </div>
 
+                  <div className="py-2">
+                    <div className="text-lg font-medium text-foreground mb-2">Discover Desi CT</div>
+                    <div className="pl-4 flex flex-col gap-2">
+                      <Link href="/discover/non-profits" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">South Asian CT Non Profits</Link>
+                      <Link href="/discover/organizations" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">South Asian CT Organizations</Link>
+                    </div>
+                  </div>
+
+                  <Link href="/youth" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">SACG Youth</Link>
+
                   <Link href="/sponsors" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Sponsors</Link>
                   <Link href="/newsletter" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Newsletter</Link>
 
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button className="mt-4">Donate</Button>
+                      <Button className="mt-4 w-full">Donate</Button>
                     </DialogTrigger>
                     <SupportDialogContent />
                   </Dialog>
@@ -149,7 +178,7 @@ export function Navigation() {
             <Button
               variant="ghost"
               size="icon"
-              className={(isScrolled || !isHomePage) ? 'md:hidden' : 'text-white hover:bg-white/20 md:hidden'}
+              className="text-white hover:bg-white/20 md:hidden"
             >
               <Menu className="h-6 w-6" />
               <span className="sr-only">Toggle menu</span>

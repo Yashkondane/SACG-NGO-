@@ -45,7 +45,7 @@ export function InteractiveCard({
           alt={title}
           fill
           quality={80}
-          loading="lazy"
+          priority={true}
           className="object-cover transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           style={{

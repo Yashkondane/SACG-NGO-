@@ -60,13 +60,13 @@ export function MissionSection({ missionContent, goalContent }: MissionSectionPr
                         <div className="max-w-7xl mx-auto grid lg:grid-cols-5 gap-8 items-center relative z-10">
                             {/* Logo Section - Left */}
                             <div className="lg:col-span-2 flex items-center justify-center">
-                                <div className="relative w-full max-w-sm aspect-square">
+                                <div className="relative w-full max-w-[320px] lg:max-w-[380px] aspect-square mx-auto">
                                     <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
                                     <Image
-                                        src={goalContent?.imageUrl || "/images/logo.jpg"}
-                                        alt="SACG Logo"
+                                        src="/images/image copy.png"
+                                        alt="Our Goal Image"
                                         fill
-                                        className="object-contain drop-shadow-2xl relative z-10 rounded-full bg-white p-2 hover:scale-105 transition-transform duration-500"
+                                        className="object-contain drop-shadow-2xl relative z-10 rounded-full bg-white p-2 border-4 border-white/20 hover:scale-105 transition-transform duration-500"
                                         sizes="(max-width: 768px) 100vw, 40vw"
                                     />
                                 </div>

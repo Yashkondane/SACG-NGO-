@@ -27,7 +27,7 @@ export const DEFAULT_PAGE_CONTENT: Record<string, Record<string, any>> = {
                 "Support community members through resources and programs",
                 "Promote civic engagement and social responsibility"
             ],
-            "imageUrl": "/images/logo.jpg"
+            "imageUrl": "/images/image copy.png"
         },
         what_we_do: {
             "title": "What We Do",

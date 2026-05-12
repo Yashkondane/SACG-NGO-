@@ -38,20 +38,28 @@ export function WhatWeDoSection({ content }: WhatWeDoSectionProps) {
                         {content?.title || "What We Do"}
                     </h2>
                 </FadeIn>
-                <StaggerContainer className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {whatWeDoItems.map((item: any, index: number) => (
-                        <StaggerItem key={index}>
-                            <InteractiveCard
-                                image={item.image}
-                                title={item.title}
-                                description={item.description}
-                                index={index}
-                                hoveredIndex={hoveredIndex}
-                                onHover={setHoveredIndex}
-                            />
-                        </StaggerItem>
-                    ))}
-                </StaggerContainer>
+                <FadeIn delay={0.2} direction="up" fullWidth>
+                    <div className="overflow-hidden w-full relative group py-4">
+                        {/* Gradient masks for smooth fading at edges */}
+                        <div className="absolute inset-y-0 left-0 w-12 md:w-24 bg-gradient-to-r from-muted/50 to-transparent z-10 pointer-events-none" />
+                        <div className="absolute inset-y-0 right-0 w-12 md:w-24 bg-gradient-to-l from-muted/50 to-transparent z-10 pointer-events-none" />
+                        
+                        <div className="flex animate-marquee hover:[animation-play-state:paused] w-max gap-6 px-4">
+                            {[...whatWeDoItems, ...whatWeDoItems].map((item: any, index: number) => (
+                                <div key={index} className="w-[280px] md:w-[360px] shrink-0">
+                                    <InteractiveCard
+                                        image={item.image}
+                                        title={item.title}
+                                        description={item.description}
+                                        index={index % whatWeDoItems.length} // Pass original index to InteractiveCard so logic works
+                                        hoveredIndex={hoveredIndex}
+                                        onHover={setHoveredIndex}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </FadeIn>
             </div>
         </section>
     )

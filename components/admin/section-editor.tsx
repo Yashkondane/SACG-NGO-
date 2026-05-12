@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Upload, ImageIcon, RotateCcw } from 'lucide-react'
+import { Loader2, Save, Upload, ImageIcon, RotateCcw, Plus, Trash2 } from 'lucide-react'
 import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 import { DEFAULT_PAGE_CONTENT } from '@/lib/content-defaults'
 
@@ -118,7 +118,20 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                 .from('event-images')
                 .getPublicUrl(filePath)
 
-            handleChange(activeImageKey, publicUrl)
+            if (activeImageKey.includes('[')) {
+                const arrayKey = activeImageKey.split('[')[0];
+                const indexStr = activeImageKey.split('[')[1].split(']')[0];
+                const index = parseInt(indexStr);
+                const fieldKey = activeImageKey.split('.')[1];
+                
+                setContent((prev: any) => {
+                    const newArray = [...prev[arrayKey]];
+                    newArray[index] = { ...newArray[index], [fieldKey]: publicUrl };
+                    return { ...prev, [arrayKey]: newArray };
+                });
+            } else {
+                handleChange(activeImageKey, publicUrl)
+            }
         } catch (error: any) {
             console.error('Error uploading image:', error)
             alert(`Upload failed: ${error.message}`)
@@ -139,26 +152,177 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
         const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 
         if (Array.isArray(value)) {
-            return (
-                <div key={key} className="space-y-2 border p-4 rounded-md bg-muted/20">
-                    <Label className="mb-2 block">{label} (List)</Label>
-                    <div className="text-xs text-muted-foreground mb-2">
-                        Editing lists is currently supported via raw JSON.
+            const isObjectArray = value.length > 0 && typeof value[0] === 'object' && value[0] !== null;
+            
+            // If empty array, default to assuming object array or string array based on key
+            const isAssumedObjectArray = isObjectArray || (value.length === 0 && key !== 'points');
+
+            if (isAssumedObjectArray) {
+                return (
+                    <div key={key} className="space-y-4">
+                        <div className="flex justify-between items-center mb-2">
+                            <Label className="text-xl font-bold">{label}</Label>
+                            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md font-medium">{value.length} Items</span>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            {value.map((item: any, index: number) => (
+                                <div key={index} className="p-6 border rounded-xl bg-card shadow-sm space-y-6 relative group transition-all hover:shadow-md">
+                                    <div className="flex items-center justify-between border-b pb-4">
+                                        <h4 className="font-semibold text-lg text-primary flex items-center gap-2">
+                                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs text-primary">{index + 1}</span>
+                                            Card Item
+                                        </h4>
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                            onClick={() => {
+                                                const newArray = [...value];
+                                                newArray.splice(index, 1);
+                                                handleChange(key, newArray);
+                                            }}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    
+                                    <div className="grid gap-6 md:grid-cols-2">
+                                        {Object.entries(item).map(([itemKey, itemValue]: [string, any]) => {
+                                            if (itemKey === 'image' || itemKey === 'imageUrl') {
+                                                return (
+                                                    <div key={itemKey} className="space-y-2 md:col-span-2">
+                                                        <Label className="capitalize font-medium">{itemKey}</Label>
+                                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border rounded-lg bg-muted/30">
+                                                            {itemValue ? (
+                                                                <div className="relative w-24 h-24 rounded-lg overflow-hidden border bg-background shrink-0 shadow-sm">
+                                                                    <img src={itemValue} alt={itemKey} className="object-cover w-full h-full" />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="w-24 h-24 rounded-lg border border-dashed flex flex-col items-center justify-center bg-background text-muted-foreground shrink-0 shadow-sm">
+                                                                    <ImageIcon className="h-6 w-6 mb-1 opacity-50" />
+                                                                    <span className="text-[10px]">No image</span>
+                                                                </div>
+                                                            )}
+                                                            <div className="space-y-2 w-full">
+                                                                <Button type="button" variant="secondary" size="sm" className="font-medium" onClick={() => {
+                                                                    initiateUpload(`${key}[${index}].${itemKey}`)
+                                                                }} disabled={uploading}>
+                                                                    <Upload className="mr-2 h-4 w-4" />
+                                                                    {itemValue ? 'Replace Image' : 'Upload Image'}
+                                                                </Button>
+                                                                <Input
+                                                                    value={itemValue}
+                                                                    onChange={(e) => {
+                                                                        const newArray = [...value];
+                                                                        newArray[index] = { ...newArray[index], [itemKey]: e.target.value };
+                                                                        handleChange(key, newArray);
+                                                                    }}
+                                                                    placeholder="/images/..."
+                                                                    className="font-mono text-xs text-muted-foreground h-9 bg-background focus-visible:ring-primary/50"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            } else {
+                                                const isLong = itemKey.includes('desc') || itemKey.includes('text') || itemKey.includes('answer')
+                                                return (
+                                                    <div key={itemKey} className={`space-y-2 ${isLong ? 'md:col-span-2' : ''}`}>
+                                                        <Label className="capitalize font-medium">{itemKey}</Label>
+                                                        {isLong ? (
+                                                            <Textarea 
+                                                                value={itemValue} 
+                                                                className="resize-none bg-background focus-visible:ring-primary/50 min-h-[100px]"
+                                                                onChange={(e) => {
+                                                                    const newArray = [...value];
+                                                                    newArray[index] = { ...newArray[index], [itemKey]: e.target.value };
+                                                                    handleChange(key, newArray);
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <Input 
+                                                                value={itemValue} 
+                                                                className="bg-background focus-visible:ring-primary/50"
+                                                                onChange={(e) => {
+                                                                    const newArray = [...value];
+                                                                    newArray[index] = { ...newArray[index], [itemKey]: e.target.value };
+                                                                    handleChange(key, newArray);
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                )
+                                            }
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="w-full border-dashed py-8 border-2 text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5 transition-colors" 
+                                onClick={() => {
+                                    const template = value.length > 0 ? Object.keys(value[0]).reduce((acc, k) => ({ ...acc, [k]: '' }), {}) : { image: '', title: '', description: '' };
+                                    handleChange(key, [...value, template])
+                                }}
+                            >
+                                <Plus className="mr-2 h-5 w-5" />
+                                Add New {label}
+                            </Button>
+                        </div>
                     </div>
-                    <Textarea
-                        id={key}
-                        value={JSON.stringify(value, null, 2)}
-                        onChange={(e) => {
-                            try {
-                                handleChange(key, JSON.parse(e.target.value))
-                            } catch (err) {
-                                // Allow typing invalid JSON while editing
-                            }
-                        }}
-                        className="font-mono text-xs min-h-[150px]"
-                    />
-                </div>
-            )
+                )
+            } else {
+                return (
+                    <div key={key} className="space-y-4">
+                        <Label className="text-xl font-bold mb-4 block">{label}</Label>
+                        <div className="space-y-3 bg-card border rounded-xl p-6 shadow-sm">
+                            {value.map((item: string, index: number) => (
+                                <div key={index} className="flex gap-3 items-center group">
+                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs text-primary font-medium">{index + 1}</span>
+                                    <Input
+                                        value={item}
+                                        className="bg-background focus-visible:ring-primary/50"
+                                        onChange={(e) => {
+                                            const newArray = [...value];
+                                            newArray[index] = e.target.value;
+                                            handleChange(key, newArray);
+                                        }}
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="shrink-0 h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-50 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => {
+                                            const newArray = [...value];
+                                            newArray.splice(index, 1);
+                                            handleChange(key, newArray);
+                                        }}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                            
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="w-full border-dashed mt-4 text-muted-foreground hover:text-primary transition-colors" 
+                                onClick={() => {
+                                    handleChange(key, [...value, ""])
+                                }}
+                            >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Item
+                            </Button>
+                        </div>
+                    </div>
+                )
+            }
         }
 
         // Image Handling
