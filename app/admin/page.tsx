@@ -31,6 +31,7 @@ import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 import { GalleryManager } from '@/components/admin/gallery-manager'
 import { ContentManager } from '@/components/admin/content-manager'
 import { DynamicQrManager } from '@/components/admin/dynamic-qr-manager'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 
 export default function AdminDashboard() {
     const [activeTab, setActiveTab] = useState('events')
@@ -39,9 +40,10 @@ export default function AdminDashboard() {
     const [events, setEvents] = useState<any[]>([])
     const [sponsors, setSponsors] = useState<any[]>([])
     const [newsletters, setNewsletters] = useState<any[]>([])
+    const [discoverItems, setDiscoverItems] = useState<any[]>([])
 
     // Upload Context State
-    const [uploadContext, setUploadContext] = useState<'event' | 'sponsor'>('event')
+    const [uploadContext, setUploadContext] = useState<'event' | 'sponsor' | 'discover'>('event')
 
     // Event Form State
     const [newEventOpen, setNewEventOpen] = useState(false)
@@ -66,6 +68,16 @@ export default function AdminDashboard() {
         name: '',
         website_url: '',
         logo_url: ''
+    })
+
+    // Discover Form State
+    const [newDiscoverOpen, setNewDiscoverOpen] = useState(false)
+    const [newDiscover, setNewDiscover] = useState({
+        name: '',
+        description: '',
+        website_url: '',
+        logo_url: '',
+        type: 'non-profit'
     })
 
     // Newsletter Form State
@@ -104,10 +116,17 @@ export default function AdminDashboard() {
                 .select('*')
                 .order('created_at', { ascending: false })
 
+            // Fetch Discover Items
+            const { data: discover } = await supabase
+                .from('discover_items')
+                .select('*')
+                .order('created_at', { ascending: true })
+
             setMessages(msgs || [])
             setEvents(evts || [])
             setSponsors(spons || [])
             setNewsletters(news || [])
+            setDiscoverItems(discover || [])
         } catch (error) {
             console.error('Error fetching data:', error)
         } finally {
@@ -157,7 +176,7 @@ export default function AdminDashboard() {
         try {
             const fileName = `${Math.random()}.jpg`
             // Determine bucket and path based on context
-            const bucketName = uploadContext === 'event' ? 'event-images' : 'sponsor-logos'
+            const bucketName = uploadContext === 'event' ? 'event-images' : (uploadContext === 'sponsor' ? 'sponsor-logos' : 'discover-logos')
             const filePath = `${fileName}`
 
             // Convert Blob to File
@@ -186,8 +205,10 @@ export default function AdminDashboard() {
                 } else {
                     setNewEvent({ ...newEvent, image_url: publicUrl })
                 }
-            } else {
+            } else if (uploadContext === 'sponsor') {
                 setNewSponsor({ ...newSponsor, logo_url: publicUrl })
+            } else if (uploadContext === 'discover') {
+                setNewDiscover({ ...newDiscover, logo_url: publicUrl })
             }
             alert('Image uploaded successfully!')
         } catch (error: any) {
@@ -375,6 +396,40 @@ export default function AdminDashboard() {
         fileInputRef.current?.click()
     }
 
+    const initiateDiscoverUpload = () => {
+        setUploadContext('discover')
+        fileInputRef.current?.click()
+    }
+
+    const handleCreateDiscover = async (e: React.FormEvent) => {
+        e.preventDefault()
+        try {
+            const { error } = await supabase
+                .from('discover_items')
+                .insert([newDiscover])
+
+            if (error) throw error
+
+            alert('Discover item added successfully!')
+            setNewDiscoverOpen(false)
+            setNewDiscover({ name: '', description: '', website_url: '', logo_url: '', type: 'non-profit' })
+            fetchData()
+        } catch (error: any) {
+            console.error('Error adding discover item:', error)
+            alert(`Failed to add discover item: ${error.message}`)
+        }
+    }
+
+    const handleDeleteDiscover = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this discover item?')) return
+        try {
+            await supabase.from('discover_items').delete().eq('id', id)
+            fetchData()
+        } catch (error) {
+            console.error('Error deleting discover item:', error)
+        }
+    }
+
     const handleCreateNewsletter = async (e: React.FormEvent) => {
         e.preventDefault()
 
@@ -457,6 +512,7 @@ export default function AdminDashboard() {
                     <TabsTrigger value="events">Events</TabsTrigger>
                     <TabsTrigger value="pages">Pages (Content)</TabsTrigger>
                     <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
+                    <TabsTrigger value="discover">Discover</TabsTrigger>
                     <TabsTrigger value="newsletters">Newsletters</TabsTrigger>
                     <TabsTrigger value="qrcode">Dynamic QRs</TabsTrigger>
                     <TabsTrigger value="messages">Messages</TabsTrigger>
@@ -544,7 +600,7 @@ export default function AdminDashboard() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="content">Full Details (Optional)</Label>
-                                            <Textarea id="content" placeholder="Full event details..." className="h-32" value={newEvent.content} onChange={e => setNewEvent({ ...newEvent, content: e.target.value })} />
+                                            <RichTextEditor value={newEvent.content} onChange={val => setNewEvent({ ...newEvent, content: val })} />
                                         </div>
                                         <Button type="submit" className="w-full" disabled={uploading}>Create Event</Button>
                                         <p className="text-xs text-muted-foreground text-center mt-2">
@@ -649,13 +705,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div className="space-y-2">
                                                 <Label htmlFor="edit-content">Full Details (Optional)</Label>
-                                                <Textarea
-                                                    id="edit-content"
-                                                    placeholder="Full event details..."
-                                                    className="h-32"
-                                                    value={editingEvent.content}
-                                                    onChange={e => setEditingEvent({ ...editingEvent, content: e.target.value })}
-                                                />
+                                                <RichTextEditor value={editingEvent.content} onChange={val => setEditingEvent({ ...editingEvent, content: val })} />
                                             </div>
                                             <Button type="submit" className="w-full" disabled={uploading}>Update Event</Button>
                                         </form>
@@ -782,6 +832,102 @@ export default function AdminDashboard() {
                     </Card>
                 </TabsContent>
 
+                <TabsContent value="discover">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Discover Management</CardTitle>
+                                <CardDescription>Manage Non-Profits and Organizations.</CardDescription>
+                            </div>
+                            <Dialog open={newDiscoverOpen} onOpenChange={setNewDiscoverOpen}>
+                                <DialogTrigger asChild>
+                                    <Button><Plus className="mr-2 h-4 w-4" /> Add Item</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Discover Item</DialogTitle>
+                                        <DialogDescription>1:1 aspect ratio required for logos (optional).</DialogDescription>
+                                    </DialogHeader>
+                                    <form onSubmit={handleCreateDiscover} className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="discover-type">Type</Label>
+                                            <select
+                                                id="discover-type"
+                                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                value={newDiscover.type}
+                                                onChange={e => setNewDiscover({ ...newDiscover, type: e.target.value })}
+                                            >
+                                                <option value="non-profit">Non-Profit</option>
+                                                <option value="organisation">Organisation</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="discover-name">Name *</Label>
+                                            <Input id="discover-name" required value={newDiscover.name} onChange={e => setNewDiscover({ ...newDiscover, name: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="discover-desc">Description *</Label>
+                                            <Textarea id="discover-desc" required value={newDiscover.description} onChange={e => setNewDiscover({ ...newDiscover, description: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="discover-url">Website URL</Label>
+                                            <Input id="discover-url" placeholder="https://..." value={newDiscover.website_url} onChange={e => setNewDiscover({ ...newDiscover, website_url: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="discover-logo">Logo (Optional, 1:1 Ratio)</Label>
+                                            <div className="flex items-center gap-4">
+                                                <Button type="button" variant="outline" onClick={initiateDiscoverUpload} disabled={uploading}>
+                                                    {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                                    {uploading ? 'Processing...' : 'Select & Crop Logo'}
+                                                </Button>
+                                                {newDiscover.logo_url && <span className="text-sm text-green-600">Logo uploaded!</span>}
+                                            </div>
+                                        </div>
+                                        <Button type="submit" className="w-full" disabled={uploading}>Add Item</Button>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+                        </CardHeader>
+                        <CardContent>
+                            {discoverItems.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">No items added yet.</div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Logo</TableHead>
+                                            <TableHead>Type</TableHead>
+                                            <TableHead>Name</TableHead>
+                                            <TableHead>Website</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {discoverItems.map((item) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell>
+                                                    {item.logo_url ? (
+                                                        <img src={item.logo_url} alt={item.name} className="h-10 w-10 object-contain rounded" />
+                                                    ) : (
+                                                        <div className="h-10 w-10 bg-muted rounded flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight p-1">No Logo</div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="capitalize">{item.type}</TableCell>
+                                                <TableCell className="font-medium">{item.name}</TableCell>
+                                                <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">{item.website_url}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteDiscover(item.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
                 <TabsContent value="newsletters">
                     <Card>

@@ -127,9 +127,10 @@ export default function EventDetailPage() {
                                 </p>
                             )}
                             {event.content && (
-                                <div className="mt-8 whitespace-pre-wrap text-lg leading-relaxed text-foreground/90">
-                                    {event.content}
-                                </div>
+                                <div 
+                                    className="mt-8 prose prose-lg max-w-none text-foreground/90 dark:prose-invert"
+                                    dangerouslySetInnerHTML={{ __html: event.content }}
+                                />
                             )}
                         </div>
 
