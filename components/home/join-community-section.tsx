@@ -27,7 +27,7 @@ export function JoinCommunitySection({ content }: JoinCommunitySectionProps) {
                 <FadeIn delay={0.3} direction="up">
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button asChild size="lg" variant="outline" className="text-lg bg-transparent border-white text-white hover:bg-white hover:text-primary transition-all duration-300 hover:scale-105">
-                            <Link href="/contact">{content?.ctaText || "Get in Touch"}</Link>
+                            <Link href={content?.ctaUrl || "/contact"}>{content?.ctaText || "Get in Touch"}</Link>
                         </Button>
                     </div>
                 </FadeIn>

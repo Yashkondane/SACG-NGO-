@@ -9,6 +9,7 @@ import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container
 import { Button } from '@/components/ui/button'
 import { getPageContent } from '@/lib/content'
 import { supabase } from '@/lib/supabase'
+import { PartnerWithUsCTA } from '@/components/sponsors/partner-cta'
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
@@ -153,25 +154,7 @@ export default async function SponsorsPage() {
 
         {/* Become a Sponsor CTA */}
         <FadeIn delay={0.2}>
-          <section className="py-24 bg-primary relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/5 opacity-10 pattern-dots"></div>
-            <div className="container mx-auto px-4 relative z-10 text-center">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">{cta?.title || "Partner With Us"}</h2>
-              <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                {cta?.description || "Join our mission to celebrate culture and community in Greater New Haven."}
-              </p>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="h-14 px-10 text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-semibold"
-                asChild
-              >
-                <a href="mailto:info@sacg.org">
-                  Become a Sponsor
-                </a>
-              </Button>
-            </div>
-          </section>
+          <PartnerWithUsCTA title={cta?.title} description={cta?.description} />
         </FadeIn>
       </main >
 

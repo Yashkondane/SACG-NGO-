@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import { SupportDialogContent } from '@/components/support-dialog-content'
 import { FadeIn } from '@/components/ui/fade-in'
 
 interface HeroSectionProps {
@@ -68,17 +66,12 @@ export function HeroSection({ content }: HeroSectionProps) {
                 <FadeIn delay={0.6} direction="up">
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
 
-                        <Dialog>
-                            <DialogTrigger asChild>
-                                <Button size="lg" className="text-lg gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                                    {content?.ctaTextPrimary || "Support Our Mission"}
-                                </Button>
-                            </DialogTrigger>
-                            <SupportDialogContent />
-                        </Dialog>
+                        <Button asChild size="lg" className="text-lg gap-2 shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                            <Link href={content?.ctaUrlPrimary || "/donation"}>{content?.ctaTextPrimary || "Support Our Mission"}</Link>
+                        </Button>
 
                         <Button asChild size="lg" variant="secondary" className="text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                            <Link href="/events">{content?.ctaTextSecondary || "Upcoming Events"}</Link>
+                            <Link href={content?.ctaUrlSecondary || "/events"}>{content?.ctaTextSecondary || "Upcoming Events"}</Link>
                         </Button>
                     </div>
                 </FadeIn>

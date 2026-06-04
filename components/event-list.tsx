@@ -31,10 +31,29 @@ export function EventList({ events, emptyMessage = "No events found." }: EventLi
         )
     }
 
+    const parseLocation = (locStr: string) => {
+        if (!locStr) return { venue: '', address: '', mapUrl: '', eventUrl: '' };
+        try {
+            const parsed = JSON.parse(locStr);
+            if (parsed && typeof parsed === 'object') {
+                return {
+                    venue: parsed.venue || '',
+                    address: parsed.address || '',
+                    mapUrl: parsed.mapUrl || '',
+                    eventUrl: parsed.eventUrl || ''
+                };
+            }
+        } catch(e) {}
+        return { venue: locStr, address: '', mapUrl: '', eventUrl: '' };
+    }
+
     return (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => (
-                <Link href={`/events/${event.id}`} key={event.id} className="block h-full group">
+            {events.map((event) => {
+                const loc = parseLocation(event.location)
+                const href = loc.eventUrl || `/events/${event.id}`
+                return (
+                <Link href={href} key={event.id} className="block h-full group">
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full border-0 bg-card">
                         {event.image_url ? (
                             <div className="relative h-48 w-full overflow-hidden">
@@ -62,21 +81,22 @@ export function EventList({ events, emptyMessage = "No events found." }: EventLi
                                     {event.is_tbd ? 'TBD' : `${new Date(event.date).toLocaleDateString()} at ${new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                                 </span>
                                 <span className="flex items-center gap-2 text-sm">
-                                    <MapPin className="h-4 w-4" />
-                                    {event.location}
+                                    <MapPin className="h-4 w-4 shrink-0" />
+                                    <span className="truncate">{loc.venue || event.location}</span>
                                 </span>
                             </CardDescription>
                         </CardHeader>
                         {event.excerpt && (
                             <CardContent className="flex-1">
-                                <p className="text-sm text-muted-foreground line-clamp-3">
-                                    {event.excerpt}
-                                </p>
+                                <div 
+                                    className="text-sm text-muted-foreground line-clamp-3 prose prose-sm dark:prose-invert max-w-none prose-p:my-0 prose-p:leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: event.excerpt }}
+                                />
                             </CardContent>
                         )}
                     </Card>
                 </Link>
-            ))}
+            )})}
         </div>
     )
 }

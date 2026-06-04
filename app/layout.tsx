@@ -17,16 +17,25 @@ export const metadata: Metadata = {
   generator: 'v0.app',
 }
 
-export default function RootLayout({
+import { getPageContent } from '@/lib/content'
+import { GlobalSettingsProvider } from '@/components/global-settings-provider'
+
+export default async function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode
+  modal: React.ReactNode
 }>) {
+  const globalSettings = await getPageContent('global-settings')
   return (
     <html lang="en">
       <body className="font-sans antialiased">
-        <Preloader />
-        {children}
+        <GlobalSettingsProvider settings={globalSettings}>
+          <Preloader />
+          {children}
+          {modal}
+        </GlobalSettingsProvider>
       </body>
     </html>
   )

@@ -22,11 +22,32 @@ export default function EventDetailPage() {
             if (!id) return
 
             try {
-                const { data, error } = await supabase
-                    .from('events')
-                    .select('*')
-                    .eq('id', id)
-                    .single()
+                const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id as string)
+                
+                let data, error;
+                if (isUuid) {
+                    const res = await supabase
+                        .from('events')
+                        .select('*')
+                        .eq('id', id)
+                        .single()
+                    data = res.data
+                    error = res.error
+                } else {
+                    // Try to find the event by custom URL in the location field
+                    const res = await supabase
+                        .from('events')
+                        .select('*')
+                        .ilike('location', `%${id}%`)
+                        
+                    if (res.error) {
+                        error = res.error
+                    } else if (res.data && res.data.length > 0) {
+                        data = res.data[0]
+                    } else {
+                        throw new Error('Event not found')
+                    }
+                }
 
                 if (error) throw error
                 setEvent(data)
@@ -69,19 +90,36 @@ export default function EventDetailPage() {
     const isUpcoming = dateObj >= new Date()
     const isHealth = event.category === 'health'
 
+    const parseLocation = (locStr: string) => {
+        if (!locStr) return { venue: '', address: '', mapUrl: '' };
+        try {
+            const parsed = JSON.parse(locStr);
+            if (parsed && typeof parsed === 'object') {
+                return {
+                    venue: parsed.venue || '',
+                    address: parsed.address || '',
+                    mapUrl: parsed.mapUrl || ''
+                };
+            }
+        } catch(e) {}
+        return { venue: locStr, address: '', mapUrl: '' };
+    }
+
+    const loc = parseLocation(event.location)
+
     return (
         <div className="min-h-screen flex flex-col">
             <Navigation />
 
             <main className="flex-1 pt-16">
                 {/* Hero Section with Image Background */}
-                <div className="relative w-full h-[40vh] min-h-[300px]">
+                <div className="relative w-full aspect-video max-h-[50vh] md:max-h-[60vh] bg-muted/30">
                     {event.image_url ? (
                         <Image
                             src={event.image_url}
                             alt={event.title}
                             fill
-                            className="object-cover"
+                            className="object-cover object-center"
                             priority
                             unoptimized
                             quality={100}
@@ -94,7 +132,7 @@ export default function EventDetailPage() {
                 </div>
 
                 {/* Event Header Content */}
-                <div className="container mx-auto px-4 -mt-12 relative z-10">
+                <div className="container mx-auto px-4 mt-8 relative z-10">
                     <div className="bg-card p-6 md:p-8 rounded-xl shadow-lg border">
                         <div className="flex flex-wrap gap-2 mb-4">
                             <Button asChild variant="outline" size="sm" className="hover:bg-accent">
@@ -122,13 +160,14 @@ export default function EventDetailPage() {
                     <div className="lg:col-span-2 space-y-8">
                         <div className="prose prose-lg dark:prose-invert max-w-none">
                             {event.excerpt && (
-                                <p className="lead text-2xl text-muted-foreground font-medium border-l-4 border-primary pl-4">
-                                    {event.excerpt}
-                                </p>
+                                <div 
+                                    className="lead text-xl text-muted-foreground font-medium border-l-4 border-primary pl-4 prose prose-lg dark:prose-invert max-w-none prose-p:my-0 break-words whitespace-normal overflow-wrap-anywhere"
+                                    dangerouslySetInnerHTML={{ __html: event.excerpt }}
+                                />
                             )}
                             {event.content && (
                                 <div 
-                                    className="mt-8 prose prose-lg max-w-none text-foreground/90 dark:prose-invert"
+                                    className="mt-8 prose prose-lg max-w-none text-foreground/90 dark:prose-invert break-words whitespace-normal overflow-wrap-anywhere"
                                     dangerouslySetInnerHTML={{ __html: event.content }}
                                 />
                             )}
@@ -185,7 +224,15 @@ export default function EventDetailPage() {
                                     </div>
                                     <div>
                                         <p className="font-medium">Location</p>
-                                        <p className="text-muted-foreground">{event.location}</p>
+                                        <p className="text-muted-foreground">{loc.venue}</p>
+                                        {loc.address && <p className="text-muted-foreground text-sm mt-1">{loc.address}</p>}
+                                        {loc.mapUrl && (
+                                            <Button asChild size="sm" variant="outline" className="mt-3">
+                                                <a href={loc.mapUrl} target="_blank" rel="noopener noreferrer">
+                                                    <MapPin className="mr-2 h-4 w-4" /> View on Google Maps
+                                                </a>
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -17,15 +17,8 @@ import {
 } from '@/components/ui/dialog'
 import { SupportDialogContent } from '@/components/support-dialog-content'
 
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About Us' },
-  { href: '/events', label: 'Events' },
-  { href: '/discover', label: 'Discover Desi CT' },
-  { href: '/youth', label: 'SACG Youth' },
-  { href: '/sponsors', label: 'Sponsors' },
-  { href: '/newsletter', label: 'Newsletter' },
-]
+import { useGlobalSettings } from '@/components/global-settings-provider'
+import { DEFAULT_PAGE_CONTENT } from '@/lib/content-defaults'
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -46,6 +39,26 @@ export function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const globalSettings = useGlobalSettings()
+  const headerLinks = globalSettings?.header?.links || DEFAULT_PAGE_CONTENT['global-settings'].header.links
+  const logoImage = globalSettings?.details?.logo_image || DEFAULT_PAGE_CONTENT['global-settings'].details.logo_image
+  
+  const navItems: any[] = [];
+  if (Array.isArray(headerLinks)) {
+    headerLinks.forEach(link => {
+      if (link.parent_dropdown) {
+        const existing = navItems.find(i => i.isDropdown && i.label === link.parent_dropdown);
+        if (existing) {
+          existing.children.push(link);
+        } else {
+          navItems.push({ isDropdown: true, label: link.parent_dropdown, children: [link] });
+        }
+      } else {
+        navItems.push({ isDropdown: false, label: link.label, href: link.href });
+      }
+    });
+  }
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${(isScrolled || !isHomePage)
@@ -56,13 +69,14 @@ export function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <Image
-              src="/images/image.png"
-              alt="SACG Logo"
-              width={60}
-              height={60}
-              className="object-contain" // Removed rounded-full to show full logo, added object-contain
-            />
+            <div className="relative w-[60px] h-[60px]">
+              <Image
+                src={logoImage}
+                alt="SACG Logo"
+                fill
+                className="object-contain"
+              />
+            </div>
             <span className="font-bold text-xl hidden md:inline transition-colors text-white">
               SACG
             </span>
@@ -70,59 +84,35 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-sm font-medium transition-colors text-white hover:text-white/80">
-              Home
-            </Link>
-            <Link href="/about" className="text-sm font-medium transition-colors text-white hover:text-white/80">
-              About Us
-            </Link>
+            {navItems.map((item, idx) => {
+              if (item.isDropdown) {
+                return (
+                  <div key={idx} className="relative group h-full flex items-center">
+                    <button className="flex items-center gap-1 text-sm font-medium transition-colors text-white hover:text-white/80">
+                      {item.label}
+                    </button>
+                    <div className="absolute top-full left-0 pt-4 min-w-[200px] hidden group-hover:block">
+                      <div className="bg-white rounded-md shadow-lg py-1 border">
+                        {item.children.map((child: any, cIdx: number) => (
+                          <Link key={cIdx} href={child.href} className="block px-4 py-2 text-sm text-primary hover:bg-gray-100 whitespace-nowrap">
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return (
+                <Link key={idx} href={item.href} className="text-sm font-medium transition-colors text-white hover:text-white/80">
+                  {item.label}
+                </Link>
+              )
+            })}
 
-            {/* Events Dropdown */}
-            <div className="relative group h-full flex items-center">
-              <button className="flex items-center gap-1 text-sm font-medium transition-colors text-white hover:text-white/80">
-                Events
-              </button>
-              {/* Dropdown Menu with Padding Bridge */}
-              <div className="absolute top-full left-0 pt-4 w-48 hidden group-hover:block">
-                <div className="bg-white rounded-md shadow-lg py-1 border">
-                  <Link href="/events/upcoming" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">Upcoming </Link>
-                  <Link href="/events/past" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">Past Events</Link>
-                  <Link href="/events/health" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">Health Awareness</Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Discover Desi CT Dropdown */}
-            <div className="relative group h-full flex items-center">
-              <button className="flex items-center gap-1 text-sm font-medium transition-colors text-white hover:text-white/80">
-                Discover Desi CT
-              </button>
-              {/* Dropdown Menu with Padding Bridge */}
-              <div className="absolute top-full left-0 pt-4 w-64 hidden group-hover:block">
-                <div className="bg-white rounded-md shadow-lg py-1 border">
-                  <Link href="/discover/non-profits" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">South Asian CT Non Profits</Link>
-                  <Link href="/discover/organizations" className="block px-4 py-2 text-sm text-primary hover:bg-gray-100">South Asian CT Organizations</Link>
-                </div>
-              </div>
-            </div>
-
-            <Link href="/youth" className="text-sm font-medium transition-colors text-white hover:text-white/80">
-              SACG Youth
-            </Link>
-
-            <Link href="/sponsors" className="text-sm font-medium transition-colors text-white hover:text-white/80">
-              Sponsors
-            </Link>
-            <Link href="/newsletter" className="text-sm font-medium transition-colors text-white hover:text-white/80">
-              Newsletter
-            </Link>
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="ml-2 bg-white text-primary hover:bg-white/90">Donate</Button>
-              </DialogTrigger>
-              <SupportDialogContent />
-            </Dialog>
+            <Button asChild className="ml-2 bg-white text-primary hover:bg-white/90">
+              <Link href="/donation">Donate</Link>
+            </Button>
           </div>
 
           {/* Mobile Navigation */}
@@ -140,37 +130,31 @@ export function Navigation() {
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col gap-4 mt-8">
-                  <Link href="/" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Home</Link>
-                  <Link href="/about" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">About Us</Link>
+                  {navItems.map((item, idx) => {
+                    if (item.isDropdown) {
+                      return (
+                        <div key={idx} className="py-2">
+                          <div className="text-lg font-medium text-foreground mb-2">{item.label}</div>
+                          <div className="pl-4 flex flex-col gap-2">
+                            {item.children.map((child: any, cIdx: number) => (
+                              <Link key={cIdx} href={child.href} onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">
+                                {child.label}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    }
+                    return (
+                      <Link key={idx} href={item.href} onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">
+                        {item.label}
+                      </Link>
+                    )
+                  })}
 
-                  <div className="py-2">
-                    <div className="text-lg font-medium text-foreground mb-2">Events</div>
-                    <div className="pl-4 flex flex-col gap-2">
-                      <Link href="/events/upcoming" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">Upcoming</Link>
-                      <Link href="/events/past" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">Past</Link>
-                      <Link href="/events/health" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">Health Awareness</Link>
-                    </div>
-                  </div>
-
-                  <div className="py-2">
-                    <div className="text-lg font-medium text-foreground mb-2">Discover Desi CT</div>
-                    <div className="pl-4 flex flex-col gap-2">
-                      <Link href="/discover/non-profits" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">South Asian CT Non Profits</Link>
-                      <Link href="/discover/organizations" onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">South Asian CT Organizations</Link>
-                    </div>
-                  </div>
-
-                  <Link href="/youth" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">SACG Youth</Link>
-
-                  <Link href="/sponsors" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Sponsors</Link>
-                  <Link href="/newsletter" onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">Newsletter</Link>
-
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="mt-4 w-full">Donate</Button>
-                    </DialogTrigger>
-                    <SupportDialogContent />
-                  </Dialog>
+                  <Button asChild className="mt-4 w-full" onClick={() => setIsOpen(false)}>
+                    <Link href="/donation">Donate</Link>
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>

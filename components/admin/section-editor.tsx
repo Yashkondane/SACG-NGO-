@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Save, Upload, ImageIcon, RotateCcw, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Save, Upload, ImageIcon, RotateCcw, Plus, Trash2, GripVertical } from 'lucide-react'
 import { ImageCropperDialog } from '@/components/image-cropper-dialog'
 import { DEFAULT_PAGE_CONTENT } from '@/lib/content-defaults'
 
@@ -14,11 +14,14 @@ interface SectionEditorProps {
     pageSlug: string
     sectionKey: string
     initialContent: any
+    arrayDisplayMode?: 'card' | 'table'
     onSave: () => void
 }
 
-export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: SectionEditorProps) {
-    const [content, setContent] = useState(initialContent || {})
+export function SectionEditor({ pageSlug, sectionKey, initialContent, arrayDisplayMode = 'card', onSave }: SectionEditorProps) {
+    const defaultContent = DEFAULT_PAGE_CONTENT[pageSlug]?.[sectionKey] || {}
+    const mergedContent = { ...defaultContent, ...initialContent }
+    const [content, setContent] = useState(mergedContent)
     const [saving, setSaving] = useState(false)
     const [uploading, setUploading] = useState(false)
 
@@ -27,6 +30,33 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null)
     const [activeImageKey, setActiveImageKey] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    // Drag and Drop State
+    const [draggedItem, setDraggedItem] = useState<{key: string, index: number} | null>(null)
+
+    const handleDragStart = (e: React.DragEvent, key: string, index: number) => {
+        setDraggedItem({ key, index })
+        e.dataTransfer.effectAllowed = 'move'
+        // Required for Firefox
+        e.dataTransfer.setData('text/html', e.currentTarget.innerHTML)
+    }
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+    }
+
+    const handleDrop = (e: React.DragEvent, key: string, targetIndex: number, currentArray: any[]) => {
+        e.preventDefault()
+        if (!draggedItem || draggedItem.key !== key || draggedItem.index === targetIndex) return
+
+        const newArray = [...currentArray]
+        const [removed] = newArray.splice(draggedItem.index, 1)
+        newArray.splice(targetIndex, 0, removed)
+        
+        handleChange(key, newArray)
+        setDraggedItem(null)
+    }
 
     const handleChange = (key: string, value: any) => {
         setContent((prev: any) => ({ ...prev, [key]: value }))
@@ -122,11 +152,15 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                 const arrayKey = activeImageKey.split('[')[0];
                 const indexStr = activeImageKey.split('[')[1].split(']')[0];
                 const index = parseInt(indexStr);
-                const fieldKey = activeImageKey.split('.')[1];
+                const fieldKey = activeImageKey.includes('.') ? activeImageKey.split('.')[1] : undefined;
                 
                 setContent((prev: any) => {
                     const newArray = [...prev[arrayKey]];
-                    newArray[index] = { ...newArray[index], [fieldKey]: publicUrl };
+                    if (fieldKey) {
+                        newArray[index] = { ...newArray[index], [fieldKey]: publicUrl };
+                    } else {
+                        newArray[index] = publicUrl;
+                    }
                     return { ...prev, [arrayKey]: newArray };
                 });
             } else {
@@ -146,9 +180,6 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
         // Skip protected keys
         if (key === 'id' || key === 'created_at' || key === 'updated_at') return null
 
-        // Explicitly hide 'images' field for Home -> Hero section
-        if (pageSlug === 'home' && sectionKey === 'hero' && key === 'images') return null
-
         const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
 
         if (Array.isArray(value)) {
@@ -159,15 +190,75 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
 
             if (isAssumedObjectArray) {
                 return (
-                    <div key={key} className="space-y-4">
+                    <div key={key} className="space-y-4 md:col-span-2">
                         <div className="flex justify-between items-center mb-2">
                             <Label className="text-xl font-bold">{label}</Label>
                             <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md font-medium">{value.length} Items</span>
                         </div>
                         
-                        <div className="space-y-6">
+                        {arrayDisplayMode === 'table' && value.length > 0 ? (
+                            <div className="border rounded-xl bg-card overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-muted/50 text-muted-foreground">
+                                        <tr>
+                                            <th className="w-10 px-4 py-3"></th>
+                                            {Object.keys(value[0]).map((colKey) => (
+                                                <th key={colKey} className="px-4 py-3 font-medium capitalize">{colKey.replace(/_/g, ' ')}</th>
+                                            ))}
+                                            <th className="w-16 px-4 py-3 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {value.map((item: any, index: number) => (
+                                            <tr 
+                                                key={index} 
+                                                className="border-t group hover:bg-muted/30 transition-colors"
+                                                draggable
+                                                onDragStart={(e) => handleDragStart(e, key, index)}
+                                                onDragOver={handleDragOver}
+                                                onDrop={(e) => handleDrop(e, key, index, value)}
+                                                onDragEnd={() => setDraggedItem(null)}
+                                            >
+                                                <td className="px-4 py-3 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
+                                                    <GripVertical className="h-4 w-4" />
+                                                </td>
+                                                {Object.entries(item).map(([itemKey, itemValue]: [string, any]) => (
+                                                    <td key={itemKey} className="px-4 py-3">
+                                                        <Input
+                                                            value={itemValue}
+                                                            className="h-8 text-sm bg-transparent border-transparent hover:border-input focus-visible:bg-background"
+                                                            onChange={(e) => {
+                                                                const newArray = [...value];
+                                                                newArray[index] = { ...newArray[index], [itemKey]: e.target.value };
+                                                                handleChange(key, newArray);
+                                                            }}
+                                                        />
+                                                    </td>
+                                                ))}
+                                                <td className="px-4 py-3 text-right">
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() => {
+                                                            const newArray = [...value];
+                                                            newArray.splice(index, 1);
+                                                            handleChange(key, newArray);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                        <div className="grid md:grid-cols-2 gap-6">
                             {value.map((item: any, index: number) => (
-                                <div key={index} className="p-6 border rounded-xl bg-card shadow-sm space-y-6 relative group transition-all hover:shadow-md">
+                                <div key={index} className="p-6 border rounded-xl bg-card shadow-sm space-y-6 relative group transition-all hover:shadow-md flex flex-col">
                                     <div className="flex items-center justify-between border-b pb-4">
                                         <h4 className="font-semibold text-lg text-primary flex items-center gap-2">
                                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs text-primary">{index + 1}</span>
@@ -188,11 +279,11 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                                         </Button>
                                     </div>
                                     
-                                    <div className="grid gap-6 md:grid-cols-2">
+                                    <div className="flex-1 grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                                         {Object.entries(item).map(([itemKey, itemValue]: [string, any]) => {
                                             if (itemKey === 'image' || itemKey === 'imageUrl') {
                                                 return (
-                                                    <div key={itemKey} className="space-y-2 md:col-span-2">
+                                                    <div key={itemKey} className="space-y-2 md:col-span-2 lg:col-span-2">
                                                         <Label className="capitalize font-medium">{itemKey}</Label>
                                                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border rounded-lg bg-muted/30">
                                                             {itemValue ? (
@@ -229,7 +320,7 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                                             } else {
                                                 const isLong = itemKey.includes('desc') || itemKey.includes('text') || itemKey.includes('answer')
                                                 return (
-                                                    <div key={itemKey} className={`space-y-2 ${isLong ? 'md:col-span-2' : ''}`}>
+                                                    <div key={itemKey} className={`space-y-2 ${isLong ? 'md:col-span-2 lg:col-span-2' : ''}`}>
                                                         <Label className="capitalize font-medium">{itemKey}</Label>
                                                         {isLong ? (
                                                             <Textarea 
@@ -259,38 +350,61 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                                     </div>
                                 </div>
                             ))}
-                            
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                className="w-full border-dashed py-8 border-2 text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5 transition-colors" 
-                                onClick={() => {
-                                    const template = value.length > 0 ? Object.keys(value[0]).reduce((acc, k) => ({ ...acc, [k]: '' }), {}) : { image: '', title: '', description: '' };
-                                    handleChange(key, [...value, template])
-                                }}
-                            >
-                                <Plus className="mr-2 h-5 w-5" />
-                                Add New {label}
-                            </Button>
                         </div>
+                        )}
+                        
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full md:col-span-2 border-dashed py-8 border-2 text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5 transition-colors" 
+                            onClick={() => {
+                                const template = value.length > 0 ? Object.keys(value[0]).reduce((acc, k) => ({ ...acc, [k]: '' }), {}) : { image: '', title: '', description: '' };
+                                handleChange(key, [...value, template])
+                            }}
+                        >
+                            <Plus className="mr-2 h-5 w-5" />
+                            Add New {label}
+                        </Button>
                     </div>
                 )
             } else {
+                const isImageArray = key.toLowerCase() === 'images';
                 return (
-                    <div key={key} className="space-y-4">
+                    <div key={key} className="space-y-4 md:col-span-2">
                         <Label className="text-xl font-bold mb-4 block">{label}</Label>
                         <div className="space-y-3 bg-card border rounded-xl p-6 shadow-sm">
                             {value.map((item: string, index: number) => (
-                                <div key={index} className="flex gap-3 items-center group">
+                                <div key={index} className={`flex ${isImageArray ? 'flex-col sm:flex-row' : ''} gap-3 items-center group bg-muted/30 p-3 rounded-lg border`}>
                                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs text-primary font-medium">{index + 1}</span>
+                                    
+                                    {isImageArray && (
+                                        <>
+                                            {item ? (
+                                                <div className="relative w-24 h-24 rounded-lg overflow-hidden border bg-background shrink-0 shadow-sm">
+                                                    <img src={item} alt={`${key} ${index}`} className="object-cover w-full h-full" />
+                                                </div>
+                                            ) : (
+                                                <div className="w-24 h-24 rounded-lg border border-dashed flex flex-col items-center justify-center bg-background text-muted-foreground shrink-0 shadow-sm">
+                                                    <ImageIcon className="h-6 w-6 mb-1 opacity-50" />
+                                                    <span className="text-[10px]">No image</span>
+                                                </div>
+                                            )}
+                                            <Button type="button" variant="secondary" size="sm" className="font-medium shrink-0" onClick={() => initiateUpload(`${key}[${index}]`)} disabled={uploading}>
+                                                <Upload className="mr-2 h-4 w-4" />
+                                                {item ? 'Replace Image' : 'Upload Image'}
+                                            </Button>
+                                        </>
+                                    )}
+
                                     <Input
                                         value={item}
-                                        className="bg-background focus-visible:ring-primary/50"
+                                        className={`bg-background focus-visible:ring-primary/50 ${isImageArray ? 'font-mono text-xs text-muted-foreground h-9' : ''}`}
                                         onChange={(e) => {
                                             const newArray = [...value];
                                             newArray[index] = e.target.value;
                                             handleChange(key, newArray);
                                         }}
+                                        placeholder={isImageArray ? "/images/..." : ""}
                                     />
                                     <Button 
                                         type="button" 
@@ -311,13 +425,13 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                             <Button 
                                 type="button" 
                                 variant="outline" 
-                                className="w-full border-dashed mt-4 text-muted-foreground hover:text-primary transition-colors" 
+                                className="w-full border-dashed mt-4 text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5 transition-colors" 
                                 onClick={() => {
                                     handleChange(key, [...value, ""])
                                 }}
                             >
                                 <Plus className="mr-2 h-4 w-4" />
-                                Add Item
+                                Add {isImageArray ? 'Image' : 'Item'}
                             </Button>
                         </div>
                     </div>
@@ -326,9 +440,9 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
         }
 
         // Image Handling
-        if (key.toLowerCase().includes('image') || (key.toLowerCase().includes('url') && typeof value === 'string' && value.startsWith('/'))) {
+        if (key.toLowerCase().includes('image') || key.toLowerCase() === 'imageurl') {
             return (
-                <div key={key} className="space-y-2">
+                <div key={key} className="space-y-2 md:col-span-2">
                     <Label>{label}</Label>
                     <div className="flex items-center gap-4">
                         {value && (
@@ -353,7 +467,15 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
 
         // Text Handling
         if (typeof value === 'string') {
-            const isLongText = value.length > 60 || key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content')
+            const forceOneColumnKeys = ['title', 'subtitle', 'ctatext', 'ctatextprimary', 'ctaurlprimary', 'ctatextsecondary', 'ctaurlsecondary', 'cta', 'ctaurl', 'badge'];
+            const forceInputKeys = ['title', 'ctatext', 'ctatextprimary', 'ctaurlprimary', 'ctatextsecondary', 'ctaurlsecondary', 'cta', 'ctaurl', 'badge'];
+            
+            const isForceOneColumn = forceOneColumnKeys.includes(key.toLowerCase()) || key.toLowerCase().startsWith('text_');
+            const isForceInput = forceInputKeys.includes(key.toLowerCase());
+
+            const isLongText = !isForceInput && (value.length > 60 || key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content'));
+
+            const colSpanClass = isForceOneColumn ? '' : (isLongText ? 'md:col-span-2' : '')
 
             // Define character limits based on key or type
             const charLimit = key.toLowerCase().includes('title') ? 100 :
@@ -363,7 +485,7 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
             const isOverLimit = value.length > charLimit
 
             return (
-                <div key={key} className="space-y-2">
+                <div key={key} className={`space-y-2 ${colSpanClass}`}>
                     <div className="flex justify-between">
                         <Label htmlFor={key}>{label}</Label>
                         <span className={`text-xs ${isOverLimit ? 'text-red-500 font-bold' : 'text-muted-foreground'}`}>
@@ -418,6 +540,13 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
         return null
     }
 
+    const getAspectForUpload = (key: string | null) => {
+        if (!key) return 16 / 9;
+        if (key.includes('mission') || key.includes('goal')) return 4 / 3;
+        if (key.includes('what_we_do')) return 1;
+        return 16 / 9;
+    }
+
     return (
         <div className="space-y-6">
             <ImageCropperDialog
@@ -425,7 +554,7 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                 onOpenChange={setCropperOpen}
                 imageSrc={selectedImageSrc}
                 onCropComplete={handleCropComplete}
-                aspect={16 / 9} // Default aspect, maybe make dynamic later
+                aspect={getAspectForUpload(activeImageKey)}
             />
             <input
                 type="file"
@@ -435,7 +564,7 @@ export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave }: 
                 onChange={handleFileSelect}
             />
 
-            <div className="grid gap-6">
+            <div className="grid md:grid-cols-2 gap-6">
                 {Object.entries(content).map(([key, value]) => renderField(key, value))}
             </div>
 

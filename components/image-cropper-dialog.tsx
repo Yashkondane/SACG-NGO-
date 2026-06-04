@@ -78,6 +78,8 @@ export function ImageCropperDialog({
                             crop={crop}
                             zoom={zoom}
                             aspect={aspect}
+                            minZoom={0.1}
+                            restrictPosition={false}
                             onCropChange={onCropChange}
                             onCropComplete={onCropCompleteHandler}
                             onZoomChange={onZoomChange}
@@ -90,7 +92,7 @@ export function ImageCropperDialog({
                         <span className="text-sm font-medium w-12">Zoom</span>
                         <Slider
                             defaultValue={[1]}
-                            min={1}
+                            min={0.1}
                             max={3}
                             step={0.1}
                             value={[zoom]}

@@ -7,6 +7,7 @@ import { StaggerContainer, StaggerItem } from '@/components/ui/stagger-container
 import { Button } from '@/components/ui/button'
 import { getPageContent } from '@/lib/content'
 import { supabase } from '@/lib/supabase'
+import { PartnerWithUsCTA } from '@/components/sponsors/partner-cta'
 
 interface DiscoverPageProps {
   type: 'non-profit' | 'organisation'
@@ -170,25 +171,14 @@ export default async function DiscoverPage({
 
         {/* CTA */}
         <FadeIn delay={0.2}>
-          <section className="py-24 bg-primary relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/5 opacity-10 pattern-dots"></div>
-            <div className="container mx-auto px-4 relative z-10 text-center">
-              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">{cta?.title || "Get Involved"}</h2>
-              <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
-                {cta?.description || "Reach out to us to feature your organization."}
-              </p>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="h-14 px-10 text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 font-semibold"
-                asChild
-              >
-                <a href="mailto:info@sacg.org">
-                  Contact Us
-                </a>
-              </Button>
-            </div>
-          </section>
+          <PartnerWithUsCTA
+            title={cta?.title || "Get Involved"}
+            description={cta?.description || "Reach out to us to feature your organization."}
+            buttonText="Contact Us"
+            subject={`Inquiry - ${type === 'non-profit' ? 'Non-Profit' : 'Organisation'}`}
+            modalTitle="Contact Us"
+            modalDescription="Fill out this form and our team will reach out to discuss featuring your organization."
+          />
         </FadeIn>
       </main>
 

@@ -6,8 +6,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Calendar, History, HeartPulse, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
+import { getPageContent } from '@/lib/content'
 
 export default function EventsPage() {
+  const [content, setContent] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getPageContent('events').then(data => {
+      setContent(data?.hub || {})
+      setLoading(false)
+    })
+  }, [])
+
+  if (loading) return null
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
@@ -16,9 +30,9 @@ export default function EventsPage() {
         <section className="bg-primary text-primary-foreground py-20 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="container mx-auto px-4 text-center relative z-10">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">Events Hub</h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">{content?.title || "Events Hub"}</h1>
             <p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto">
-              Explore our community gatherings, past celebrations, and health initiatives.
+              {content?.description || "Explore our community gatherings, past celebrations, and health initiatives."}
             </p>
           </div>
         </section>
@@ -33,8 +47,8 @@ export default function EventsPage() {
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/5 transition-colors z-10"></div>
                     <Image
-                      src="/images/cultural-events.jpg" // Using existing image or placeholder
-                      alt="Upcoming Events"
+                      src={content?.card1_image || "/images/cultural-events.jpg"}
+                      alt={content?.card1_title || "Upcoming Events"}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
                     />
@@ -45,14 +59,14 @@ export default function EventsPage() {
                     </div>
                   </div>
                   <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">Upcoming Events</CardTitle>
+                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">{content?.card1_title || "Upcoming Events"}</CardTitle>
                   </CardHeader>
                   <CardContent className="text-center">
                     <p className="text-muted-foreground mb-4">
-                      Stay up to date with our schedule of festivals, workshops, and community gatherings.
+                      {content?.card1_description || "Stay up to date with our schedule of festivals, workshops, and community gatherings."}
                     </p>
                     <span className="inline-flex items-center text-primary font-semibold group-hover:translate-x-1 transition-transform">
-                      View Schedule <ArrowRight className="ml-2 w-4 h-4" />
+                      {content?.card1_cta || "View Schedule"} <ArrowRight className="ml-2 w-4 h-4" />
                     </span>
                   </CardContent>
                 </Card>
@@ -64,8 +78,8 @@ export default function EventsPage() {
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/5 transition-colors z-10"></div>
                     <Image
-                      src="/images/community-building.jpg" // Using existing image or placeholder
-                      alt="Past Events"
+                      src={content?.card2_image || "/images/community-building.jpg"}
+                      alt={content?.card2_title || "Past Events"}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
                     />
@@ -76,14 +90,14 @@ export default function EventsPage() {
                     </div>
                   </div>
                   <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">Past Events</CardTitle>
+                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">{content?.card2_title || "Past Events"}</CardTitle>
                   </CardHeader>
                   <CardContent className="text-center">
                     <p className="text-muted-foreground mb-4">
-                      Browse through our gallery and memories from previous celebrations and successful events.
+                      {content?.card2_description || "Browse through our gallery and memories from previous celebrations and successful events."}
                     </p>
                     <span className="inline-flex items-center text-primary font-semibold group-hover:translate-x-1 transition-transform">
-                      Explore Memories <ArrowRight className="ml-2 w-4 h-4" />
+                      {content?.card2_cta || "Explore Memories"} <ArrowRight className="ml-2 w-4 h-4" />
                     </span>
                   </CardContent>
                 </Card>
@@ -95,8 +109,8 @@ export default function EventsPage() {
                   <div className="relative h-64 overflow-hidden">
                     <div className="absolute inset-0 bg-primary/10 group-hover:bg-primary/5 transition-colors z-10"></div>
                     <Image
-                      src="/images/social-support.jpg" // Using existing image or placeholder
-                      alt="Health Awareness"
+                      src={content?.card3_image || "/images/social-support.jpg"}
+                      alt={content?.card3_title || "Health Awareness"}
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
                     />
@@ -107,14 +121,14 @@ export default function EventsPage() {
                     </div>
                   </div>
                   <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">Health Awareness</CardTitle>
+                    <CardTitle className="text-2xl group-hover:text-primary transition-colors">{content?.card3_title || "Health Awareness"}</CardTitle>
                   </CardHeader>
                   <CardContent className="text-center">
                     <p className="text-muted-foreground mb-4">
-                      Discover our dedicated health initiatives, medical camps, and wellness workshops.
+                      {content?.card3_description || "Discover our dedicated health initiatives, medical camps, and wellness workshops."}
                     </p>
                     <span className="inline-flex items-center text-primary font-semibold group-hover:translate-x-1 transition-transform">
-                      Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                      {content?.card3_cta || "Learn More"} <ArrowRight className="ml-2 w-4 h-4" />
                     </span>
                   </CardContent>
                 </Card>

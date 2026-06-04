@@ -5,7 +5,9 @@ export const DEFAULT_PAGE_CONTENT: Record<string, Record<string, any>> = {
             "title": "Building Bridges, Celebrating Culture",
             "subtitle": "The South Asian Community of Greater New Haven brings together diverse voices to create a vibrant, inclusive community",
             "ctaTextPrimary": "Support Our Mission",
+            "ctaUrlPrimary": "/donation",
             "ctaTextSecondary": "Upcoming Events",
+            "ctaUrlSecondary": "/events",
             "images": [
                 "/images/hero.jpg",
                 "/images/sacg-banner.png"
@@ -78,7 +80,8 @@ export const DEFAULT_PAGE_CONTENT: Record<string, Record<string, any>> = {
         join_community: {
             "title": "Join Our Community",
             "description": "Become part of something bigger. Connect with your community, celebrate your heritage, and make a difference.",
-            "ctaText": "Get in Touch"
+            "ctaText": "Get in Touch",
+            "ctaUrl": "/contact"
         }
     },
     about: {
@@ -94,6 +97,11 @@ export const DEFAULT_PAGE_CONTENT: Record<string, Record<string, any>> = {
             "text_2": "What started as informal gatherings quickly grew into something much bigger—a movement focused on preserving cultural identity, bridging the gap between traditions, and building a sense of belonging in a broader community.",
             "text_3": "With several successful and multi-faceted events under our belt, we formally registered as a 501(c)3 in July 2025. We are committed to building a welcoming home for the South Asian community of Greater New Haven.",
             "imageUrl": "/images/about-team.jpg"
+        },
+        members_intro: {
+            "badge": "Leadership",
+            "title": "Board Members",
+            "description": "Meet the dedicated individuals who lead our organization and guide our mission to serve the community."
         }
     },
     sponsors: {
@@ -116,6 +124,113 @@ export const DEFAULT_PAGE_CONTENT: Record<string, Record<string, any>> = {
             "badge": "Community Updates",
             "title": "SACG Newsletters",
             "description": "Stay connected with our community through our monthly newsletters matching events, updates, and stories."
+        }
+    },
+    events: {
+        hub: {
+            "title": "Events Hub",
+            "description": "Explore our community gatherings, past celebrations, and health initiatives.",
+            "card1_title": "Upcoming Events",
+            "card1_description": "Stay up to date with our schedule of festivals, workshops, and community gatherings.",
+            "card1_cta": "View Schedule",
+            "card1_image": "/images/cultural-events.jpg",
+            "card2_title": "Past Events",
+            "card2_description": "Browse through our gallery and memories from previous celebrations and successful events.",
+            "card2_cta": "Explore Memories",
+            "card2_image": "/images/community-building.jpg",
+            "card3_title": "Health Awareness",
+            "card3_description": "Discover our dedicated health initiatives, medical camps, and wellness workshops.",
+            "card3_cta": "Learn More",
+            "card3_image": "/images/social-support.jpg"
+        },
+        upcoming: {
+            "title": "Upcoming Events",
+            "description": "Join us for our future gatherings and celebrations."
+        },
+        past: {
+            "title": "Past Events",
+            "description": "Reflecting on the moments that brought us together. From cultural celebrations to community workshops, explore the memories we've created and the impact we've made in the South Asian community."
+        },
+        health: {
+            "title": "Health Awareness",
+            "description": "Empowering our community through knowledge and wellness. Join our expert-led sessions, health screenings, and fitness workshops designed to promote a healthier lifestyle for everyone."
+        }
+    },
+    'discover-non-profit': {
+        header: {
+            "badge": "Community Non-Profits",
+            "title": "Our Partner Non-Profits",
+            "description": "We collaborate with amazing non-profit organizations to support and uplift our community."
+        },
+        thank_you: {
+            "title": "Thank You to Our Non-Profit Partners",
+            "description": "Our non-profit partners help us drive meaningful impact. Through their dedication and services, we build a stronger, more resilient community."
+        },
+        cta: {
+            "title": "Get Involved",
+            "description": "Reach out to us to feature your organization."
+        }
+    },
+    'discover-organisation': {
+        header: {
+            "badge": "Partner Organisations",
+            "title": "Our Partner Organisations",
+            "description": "Meet the local businesses and cultural organisations that help our community thrive."
+        },
+        thank_you: {
+            "title": "Thank You to Our Partners",
+            "description": "These organisations play a vital role in our ecosystem, providing support, resources, and cultural connection."
+        },
+        cta: {
+            "title": "Get Involved",
+            "description": "Reach out to us to feature your organization."
+        }
+    },
+    'contact': {
+        header: {
+            "badge": "Get In Touch",
+            "title": "Contact Us",
+            "description": "Have questions, feedback, or want to get involved? We'd love to hear from you and connect!"
+        },
+        details: {
+            "email": "info@sacg.org",
+            "phone": "(203) 555-0100",
+            "address": "123 Community Lane\nNew Haven, CT 06511",
+            "office_hours": "Monday - Friday: 9:00 AM - 5:00 PM\nSaturday: 10:00 AM - 2:00 PM\nSunday: Closed"
+        }
+    },
+    'global-settings': {
+        header: {
+            links: [
+                { label: "Home", href: "/", parent_dropdown: "" },
+                { label: "Our Story", href: "/about", parent_dropdown: "About Us" },
+                { label: "Board Members", href: "/about/board-members", parent_dropdown: "About Us" },
+                { label: "Upcoming", href: "/events/upcoming", parent_dropdown: "Events" },
+                { label: "Past Events", href: "/events/past", parent_dropdown: "Events" },
+                { label: "Health & Wellness Events", href: "/events/health", parent_dropdown: "Events" },
+                { label: "Non-Profits", href: "/discover/non-profits", parent_dropdown: "Discover Desi CT" },
+                { label: "Organisations", href: "/discover/organisations", parent_dropdown: "Discover Desi CT" },
+                { label: "SACG Youth", href: "/youth", parent_dropdown: "" },
+                { label: "Sponsors", href: "/sponsors", parent_dropdown: "" },
+                { label: "Newsletter", href: "/newsletter", parent_dropdown: "" },
+                { label: "Contact Us", href: "/contact", parent_dropdown: "" }
+            ]
+        },
+        footer: {
+            links: [
+                { label: "About Us", href: "/about", column_name: "Quick Links" },
+                { label: "Events", href: "/events", column_name: "Quick Links" },
+                { label: "Sponsors", href: "/sponsors", column_name: "Quick Links" },
+                { label: "Newsletter", href: "/newsletter", column_name: "Connect" },
+                { label: "Donate", href: "/donation", column_name: "Connect" }
+            ]
+        },
+        details: {
+            logo_image: "/images/image.png",
+            mission_text: "Building bridges, celebrating culture, and fostering community growth in the Greater New Haven area.",
+            facebook_url: "#",
+            instagram_url: "#",
+            email_address: "info@sacg.org"
         }
     }
 }

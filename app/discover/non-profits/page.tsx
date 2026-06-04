@@ -8,10 +8,10 @@ export default function NonProfitPage() {
       type="non-profit"
       pageSlug="discover-non-profit"
       defaultBadge="Community Non-Profits"
-      defaultTitle="Our Partner Non-Profits"
-      defaultDescription="We collaborate with amazing non-profit organizations to support and uplift our community."
-      thankYouTitle="Thank You to Our Non-Profit Partners"
-      thankYouDescription="Our non-profit partners help us drive meaningful impact. Through their dedication and services, we build a stronger, more resilient community."
+      defaultTitle="Community Non-Profits"
+      defaultDescription="Discover amazing non-profit organizations that support and uplift our community."
+      thankYouTitle="Our Featured Non-Profits"
+      thankYouDescription="These non-profits help drive meaningful impact. Through their dedication and services, we build a stronger, more resilient community."
     />
   )
 }
