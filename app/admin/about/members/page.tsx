@@ -115,7 +115,7 @@ export default function BoardMembersPage() {
         setUploading(true)
         try {
             const fileName = `${Math.random()}.jpg`
-            const bucketName = 'board-members'
+            const bucketName = 'board-member-images'
             const filePath = `${fileName}`
             const file = new File([croppedBlob], fileName, { type: 'image/jpeg' })
 
