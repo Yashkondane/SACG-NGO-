@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Preloader } from '@/components/preloader'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 import './globals.css'
 
@@ -36,6 +37,7 @@ export default async function RootLayout({
           {children}
           {modal}
         </GlobalSettingsProvider>
+        <GoogleAnalytics gaId="G-2ZJ9WFTPPL" />
       </body>
     </html>
   )
