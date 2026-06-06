@@ -24,7 +24,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { SectionEditor } from '@/components/admin/section-editor'
-import { Loader2, Plus, Trash2, RefreshCw } from 'lucide-react'
+import { Loader2, Plus, Trash2, RefreshCw, Edit2 } from 'lucide-react'
 import { DEFAULT_PAGE_CONTENT } from '@/lib/content-defaults'
 
 export default function NewslettersPage() {
@@ -34,6 +34,13 @@ export default function NewslettersPage() {
     // Form State
     const [newNewsletterOpen, setNewNewsletterOpen] = useState(false)
     const [newNewsletter, setNewNewsletter] = useState({
+        title: '',
+        link: ''
+    })
+    
+    const [editNewsletterOpen, setEditNewsletterOpen] = useState(false)
+    const [editNewsletter, setEditNewsletter] = useState({
+        id: '',
         title: '',
         link: ''
     })
@@ -113,6 +120,33 @@ export default function NewslettersPage() {
         }
     }
 
+    const handleUpdateNewsletter = async (e: React.FormEvent) => {
+        e.preventDefault()
+
+        const link = editNewsletter.link
+        if (!link.includes('drive.google.com') || !link.includes('/view')) {
+            alert("This format can't be accepted. We only support Google Drive links ending in /view")
+            return
+        }
+
+        try {
+            const { error } = await supabase
+                .from('newsletters')
+                .update({ title: editNewsletter.title, link: editNewsletter.link })
+                .eq('id', editNewsletter.id)
+
+            if (error) throw error
+
+            alert('Newsletter updated successfully!')
+            setEditNewsletterOpen(false)
+            setEditNewsletter({ id: '', title: '', link: '' })
+            fetchNewsletters()
+        } catch (error: any) {
+            console.error('Error updating newsletter:', error)
+            alert(`Failed to update newsletter: ${error.message}`)
+        }
+    }
+
     const handleDeleteNewsletter = async (id: string) => {
         if (!confirm('Are you sure you want to delete this newsletter?')) return
         try {
@@ -171,6 +205,26 @@ export default function NewslettersPage() {
                                         </form>
                                     </DialogContent>
                                 </Dialog>
+
+                                <Dialog open={editNewsletterOpen} onOpenChange={setEditNewsletterOpen}>
+                                    <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Edit Newsletter</DialogTitle>
+                                            <DialogDescription>Link must be a Google Drive link ending in <code>/view</code>.</DialogDescription>
+                                        </DialogHeader>
+                                        <form onSubmit={handleUpdateNewsletter} className="space-y-4 py-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-newsletter-title">Newsletter Title *</Label>
+                                                <Input id="edit-newsletter-title" required placeholder="e.g. January 2026 Issue" value={editNewsletter.title} onChange={e => setEditNewsletter({ ...editNewsletter, title: e.target.value })} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-newsletter-link">Google Drive Link *</Label>
+                                                <Input id="edit-newsletter-link" required placeholder="https://drive.google.com/.../view" value={editNewsletter.link} onChange={e => setEditNewsletter({ ...editNewsletter, link: e.target.value })} />
+                                            </div>
+                                            <Button type="submit" className="w-full">Save Changes</Button>
+                                        </form>
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -198,7 +252,13 @@ export default function NewslettersPage() {
                                                         {nl.link}
                                                     </a>
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="text-right whitespace-nowrap">
+                                                    <Button size="icon" variant="ghost" className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 mr-1" onClick={() => {
+                                                        setEditNewsletter({ id: nl.id, title: nl.title, link: nl.link })
+                                                        setEditNewsletterOpen(true)
+                                                    }}>
+                                                        <Edit2 className="h-4 w-4" />
+                                                    </Button>
                                                     <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteNewsletter(nl.id)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>

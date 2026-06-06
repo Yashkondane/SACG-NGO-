@@ -16,7 +16,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
-      <main className="flex-grow">
+      <main className="flex-grow overflow-x-hidden">
         <HeroSection content={content?.hero} />
         <MissionSection missionContent={content?.mission} goalContent={content?.goal} />
         <WhatWeDoSection content={content?.what_we_do} />
