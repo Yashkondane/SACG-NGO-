@@ -155,26 +155,26 @@ export default function EventDetailPage() {
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 py-12 grid lg:grid-cols-3 gap-12">
+                <div className="container mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12 w-full min-w-0 overflow-hidden md:overflow-visible">
                     {/* Main Content (Left) */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="prose prose-lg dark:prose-invert max-w-none">
+                    <div className="lg:col-span-2 space-y-8 min-w-0 w-full">
+                        <div className="prose prose-lg dark:prose-invert max-w-none min-w-0 w-full break-words prose-img:max-w-full prose-img:h-auto overflow-x-auto">
                             {event.excerpt && (
                                 <div 
-                                    className="lead text-xl text-muted-foreground font-medium border-l-4 border-primary pl-4 prose prose-lg dark:prose-invert max-w-none prose-p:my-0 break-words whitespace-normal overflow-wrap-anywhere"
+                                    className="lead text-xl text-muted-foreground font-medium border-l-4 border-primary pl-4 prose prose-lg dark:prose-invert max-w-none prose-p:my-0 break-words"
                                     dangerouslySetInnerHTML={{ __html: event.excerpt }}
                                 />
                             )}
                             {event.content && (
                                 <div 
-                                    className="mt-8 prose prose-lg max-w-none text-foreground/90 dark:prose-invert break-words whitespace-normal overflow-wrap-anywhere"
+                                    className="mt-8 prose prose-lg max-w-none text-foreground/90 dark:prose-invert break-words"
                                     dangerouslySetInnerHTML={{ __html: event.content }}
                                 />
                             )}
                         </div>
 
                         {/* Event Gallery Section */}
-                        <div className="pt-12 border-t">
+                        <div className="pt-12 border-t min-w-0 w-full">
                             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                                 <span className="w-8 h-1 bg-primary rounded-full"></span>
                                 Event Gallery

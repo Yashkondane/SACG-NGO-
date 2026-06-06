@@ -12,6 +12,12 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import {
   Dialog,
   DialogTrigger,
 } from '@/components/ui/dialog'
@@ -129,28 +135,36 @@ export function Navigation() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[300px] sm:w-[400px] overflow-y-auto">
-                <div className="flex flex-col gap-4 mt-8 pb-8">
-                  {navItems.map((item, idx) => {
-                    if (item.isDropdown) {
+                <div className="flex flex-col gap-2 mt-8 pb-8">
+                  <Accordion type="multiple" className="w-full">
+                    {navItems.map((item, idx) => {
+                      if (item.isDropdown) {
+                        return (
+                          <AccordionItem value={`item-${idx}`} key={idx} className="border-b-0">
+                            <AccordionTrigger className="text-lg font-medium text-muted-foreground hover:text-primary py-2 hover:no-underline">
+                              {item.label}
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="flex flex-col gap-3 pl-4 pt-1">
+                                {item.children.map((child: any, cIdx: number) => (
+                                  <Link key={cIdx} href={child.href} onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary block w-full">
+                                    {child.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        )
+                      }
                       return (
                         <div key={idx} className="py-2">
-                          <div className="text-lg font-medium text-foreground mb-2">{item.label}</div>
-                          <div className="pl-4 flex flex-col gap-2">
-                            {item.children.map((child: any, cIdx: number) => (
-                              <Link key={cIdx} href={child.href} onClick={() => setIsOpen(false)} className="text-base text-muted-foreground hover:text-primary">
-                                {child.label}
-                              </Link>
-                            ))}
-                          </div>
+                          <Link href={item.href} onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors block w-full text-left">
+                            {item.label}
+                          </Link>
                         </div>
                       )
-                    }
-                    return (
-                      <Link key={idx} href={item.href} onClick={() => setIsOpen(false)} className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors py-2">
-                        {item.label}
-                      </Link>
-                    )
-                  })}
+                    })}
+                  </Accordion>
 
                   <Button asChild className="mt-4 w-full" onClick={() => setIsOpen(false)}>
                     <Link href="/donation">Donate</Link>
